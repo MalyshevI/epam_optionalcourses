@@ -26,3 +26,7 @@ hs_err_pid*
 target
 out
 *.iml
+
+# Ignore gradle files
+.gradle/
+build/
