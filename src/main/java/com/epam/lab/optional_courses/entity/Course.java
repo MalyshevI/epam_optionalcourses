@@ -5,6 +5,7 @@ import java.util.Date;
 
 /**
  * The class describes objects which handle a Academic courses
+ *
  * @author Nikolai Tikhonov
  */
 public class Course {

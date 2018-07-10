@@ -4,6 +4,7 @@ import java.util.Objects;
 
 /**
  * The class describes objects which handle a types of courses
+ *
  * @author Nikolai Tikhonov
  */
 public class CourseType {
