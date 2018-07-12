@@ -10,14 +10,14 @@ import java.util.Objects;
 
 
 public class Feedback {
-    private int userId;
-    private int courseId;
+    private User user;
+    private Course course;
     private int grade;
     private String feedbackBody;
 
-    public Feedback(int userId, int courseId, int grade, String feedbackBody) {
-        this.userId = userId;
-        this.courseId = courseId;
+    public Feedback(User user, Course course, int grade, String feedbackBody) {
+        this.user = user;
+        this.course = course;
         this.grade = grade;
         this.feedbackBody = feedbackBody;
     }
@@ -27,28 +27,29 @@ public class Feedback {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Feedback feedback = (Feedback) o;
-        return (userId == feedback.userId) && (courseId == feedback.courseId);
+        return (user != null ) && user.equals(feedback.user) &&
+                (course != null) && course.equals(feedback.course);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId, courseId);
+        return Objects.hash(course, user);
     }
 
-    public int getUserId() {
-        return userId;
+    public int getUser() {
+        return user;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setUser(int user) {
+        this.user = user;
     }
 
-    public int getCourseId() {
-        return courseId;
+    public int getCourse() {
+        return course;
     }
 
-    public void setCourseId(int courseId) {
-        this.courseId = courseId;
+    public void setCourse(int course) {
+        this.course = course;
     }
 
     public int getGrade() {
