@@ -2,6 +2,7 @@ package com.epam.lab.optional_courses.dao;
 
 import com.epam.lab.optional_courses.entity.Course;
 import com.epam.lab.optional_courses.entity.Feedback;
+import com.epam.lab.optional_courses.entity.User;
 
 import java.util.List;
 
