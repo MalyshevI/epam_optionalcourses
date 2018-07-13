@@ -58,5 +58,5 @@ public interface  CourseDao {
      * @param course - given Course object
      * @return - previous Course object from DB
      */
-    Course updateCourse(Course course);
+    boolean updateCourse(Course course);
 }
