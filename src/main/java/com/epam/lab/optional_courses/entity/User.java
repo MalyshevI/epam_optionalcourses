@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * This class describes user entity
  *
- * @Author Dolgov Vladimir
+ * @author Dolgov Vladimir
  */
 
 public class User {
@@ -18,6 +18,8 @@ public class User {
     private boolean isAdmin;
     private int groupId;
 
+    public User(){};
+
     public User(int id, String firstName, String lastName, String email, char[] password, boolean isAdmin, int groupId){
         this.id = id;
         this.firstName = firstName;
@@ -28,8 +30,6 @@ public class User {
         this.groupId = groupId;
     }
 
-    public User() {
-    }
 
     public int getId(){
         return id;

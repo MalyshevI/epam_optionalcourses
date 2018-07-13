@@ -32,7 +32,7 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
     private static final String UPDATE = "UPDATE feedback SET feedback=?, grade=? WHERE user_id=? AND course_id=?";
 
     private Connection getConnection() {
-        ConnectionPool connectionPool = ConnectionPool.getInstance(10);
+        ConnectionPool connectionPool = ConnectionPool.getInstance();
         return connectionPool.getConnection();
     }
 
