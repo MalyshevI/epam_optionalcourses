@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @author Anton Kulaga
  */
-public class FeedbackDaoImplForH2 implements FeedbackDao {
+public class FeedbackDaoH2Impl implements FeedbackDao {
 
     private static final String GET_BY_USER_AND_COURSE = "SELECT * FROM feedback WHERE user_id=? AND course_id=?";
     private static final String GET_BY_USER = "SELECT * FROM feedback WHERE user_id=?";

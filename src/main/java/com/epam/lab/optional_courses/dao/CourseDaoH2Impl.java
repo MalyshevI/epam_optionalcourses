@@ -25,7 +25,6 @@ public class CourseDaoH2Impl implements CourseDao {
     private static final String UPDATE = "UPDATE feedback SET course_name=?, start_date=?, finish_date=?, tutor_id=?, capacity=? WHERE course_id=?";
 
 
-
     /**
      * Return Course object from DataBase corresponding to given id
      *
@@ -33,7 +32,7 @@ public class CourseDaoH2Impl implements CourseDao {
      * @return Course object
      */
     @Override
-    public Course getCourseByID(int id) {
+    public Course getCourseById(int id) {
         return null;
     }
 
@@ -54,7 +53,7 @@ public class CourseDaoH2Impl implements CourseDao {
      * @return list of Course objects
      */
     @Override
-    public List<Course> getCourseByTutor(User tutor) {
+    public List<Course> getCoursesByTutor(User tutor) {
         return null;
     }
 

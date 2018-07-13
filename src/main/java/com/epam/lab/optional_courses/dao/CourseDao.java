@@ -17,7 +17,7 @@ public interface  CourseDao {
      * @param id - given id of Course
      * @return Course object
      */
-    Course getCourseByID(int id);
+    Course getCourseById(int id);
 
     /**
      * Return list of all exist Course objects
@@ -30,7 +30,14 @@ public interface  CourseDao {
      * @param tutor - given object User
      * @return list of Course objects
      */
-    List<Course> getCourseByTutor(User tutor);
+    List<Course> getCoursesByTutor(User tutor);
+
+    /**
+     * Returns the list of courses that the specified user is leading
+     * @param user - given object User
+     * @return list of Course objects
+     */
+    List<Course> getCoursesByUser(User user);
 
     /**
      * Add given Course object to DataBase
