@@ -67,5 +67,5 @@ public interface FeedbackDao {
      * @param feedback - given Feedback object
      * @return - previous Feedback object from DB
      */
-    Feedback updateFeedback (Feedback feedback);
+    boolean updateFeedback (Feedback feedback);
 }

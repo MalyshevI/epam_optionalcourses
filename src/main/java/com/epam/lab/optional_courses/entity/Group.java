@@ -18,6 +18,9 @@ public class Group {
         this.groupName = groupName;
     }
 
+    public Group() {
+    }
+
     public int getId() {
         return id;
     }
