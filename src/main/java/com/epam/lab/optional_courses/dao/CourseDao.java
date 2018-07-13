@@ -30,7 +30,14 @@ public interface  CourseDao {
      * @param tutor - given object User
      * @return list of Course objects
      */
-    List<Course> getCourseByTutor(User tutor);
+    List<Course> getCoursesByTutor(User tutor);
+
+    /**
+     * Returns the list of courses that the specified user is leading
+     * @param user - given object User
+     * @return list of Course objects
+     */
+    List<Course> getCoursesByUser(User user);
 
     /**
      * Add given Course object to DataBase
@@ -51,5 +58,5 @@ public interface  CourseDao {
      * @param course - given Course object
      * @return - previous Course object from DB
      */
-    Course updateCourse(Course course);
+    boolean updateCourse(Course course);
 }
