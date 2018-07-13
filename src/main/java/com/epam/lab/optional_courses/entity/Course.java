@@ -7,20 +7,24 @@ import java.util.Date;
  * The class describes objects which handle a Academic courses
  *
  * @author Nikolai Tikhonov
+ * @author Ilia_Malyshev
  */
 public class Course {
     private int id;
-    private CourseType type;
-    private User tutor;
+    private String courseName;
     private Date startDate;
     private Date finishDate;
+    private User tutor;
+    private int capacity;
 
-    public Course(int id, CourseType type, User tutor, Date startDate, Date finishDate) {
+
+    public Course(int id, String courseName, Date startDate, Date finishDate, User tutor, int capacity) {
         this.id = id;
-        this.type = type;
-        this.tutor = tutor;
+        this.courseName = courseName;
         this.startDate = startDate;
         this.finishDate = finishDate;
+        this.tutor = tutor;
+        this.capacity = capacity;
     }
 
     public Course() {
@@ -32,14 +36,6 @@ public class Course {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public CourseType getType() {
-        return type;
-    }
-
-    public void setType(CourseType type) {
-        this.type = type;
     }
 
     public User getTutor() {
@@ -64,5 +60,21 @@ public class Course {
 
     public void setFinishDate(Date finishDate) {
         this.finishDate = finishDate;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
     }
 }
