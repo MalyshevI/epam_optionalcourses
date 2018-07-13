@@ -2,15 +2,30 @@ package com.epam.lab.optional_courses.dao;
 
 import com.epam.lab.optional_courses.entity.Course;
 import com.epam.lab.optional_courses.entity.User;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
+
 
 /**
  * The class describes methods which cooperate with database
  *
  * @author Ilia_Malyshev
  */
-public class CourseDaoImpl implements CourseDao {
+public class CourseDaoH2Impl implements CourseDao {
+
+    private final Logger log = LogManager.getLogger(CourseDaoH2Impl.class);
+
+    private static final String GET_BY_ID = "SELECT * FROM courses WHERE user_id=?";
+    private static final String GET_ALL = "SELECT * FROM course";
+    private static final String GET_BY_TUTOR = "SELECT * FROM courses WHERE user_id=?";
+    private static final String ADD = "INSERT INTO course(course_id, course_name, start_date, finish date, tutor_id, capacity) VALUES(?, ?, ?, ?, ?, ?)";
+    private static final String DELETE = "DELETE FROM course WHERE user_id=? AND course_id=?";
+    private static final String UPDATE = "UPDATE feedback SET course_name=?, start_date=?, finish_date=?, tutor_id=?, capacity=? WHERE course_id=?";
+
+
+
     /**
      * Return Course object from DataBase corresponding to given id
      *
