@@ -23,6 +23,9 @@ public class Course {
         this.finishDate = finishDate;
     }
 
+    public Course() {
+    }
+
     public int getId() {
         return id;
     }
