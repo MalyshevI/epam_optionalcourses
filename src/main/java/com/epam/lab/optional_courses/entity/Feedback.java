@@ -22,12 +22,15 @@ public class Feedback {
         this.feedbackBody = feedbackBody;
     }
 
+    public Feedback() {
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Feedback feedback = (Feedback) o;
-        return (user != null ) && user.equals(feedback.user) &&
+        return (user != null) && user.equals(feedback.user) &&
                 (course != null) && course.equals(feedback.course);
     }
 

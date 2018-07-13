@@ -17,8 +17,6 @@ public class Course {
     private User tutor;
     private int capacity;
 
-    public Course() {
-    }
 
     public Course(int id, String courseName, Date startDate, Date finishDate, User tutor, int capacity) {
         this.id = id;
@@ -29,6 +27,8 @@ public class Course {
         this.capacity = capacity;
     }
 
+    public Course() {
+    }
 
     public int getId() {
         return id;
