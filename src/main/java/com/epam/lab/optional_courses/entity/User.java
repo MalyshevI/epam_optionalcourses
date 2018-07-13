@@ -28,6 +28,9 @@ public class User {
         this.groupId = groupId;
     }
 
+    public User() {
+    }
+
     public int getId(){
         return id;
     }

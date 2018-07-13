@@ -18,6 +18,9 @@ public class CourseType {
         this.name = name;
     }
 
+    public CourseType() {
+    }
+
     public int getId() {
         return id;
     }
