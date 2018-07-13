@@ -23,16 +23,16 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
     private CourseDaoH2Impl courseDaoH2;
     private static final Logger log = LogManager.getLogger(FeedbackDaoH2Impl.class);
 
-    private static final String GET_BY_USER_AND_COURSE = "SELECT * FROM feedback WHERE user_id=? AND course_id=?";
-    private static final String GET_BY_USER = "SELECT * FROM feedback WHERE user_id=?";
-    private static final String GET_BY_COURSE = "SELECT * FROM feedback WHERE course_id=?";
-    private static final String GET_ALL = "SELECT * FROM feedback";
+    private static final String GET_BY_USER_AND_COURSE = "SELECT user_id, course_id, feedback_body, grade FROM feedback WHERE user_id=? AND course_id=?";
+    private static final String GET_BY_USER = "SELECT user_id, course_id, feedback_body, grade FROM feedback WHERE user_id=?";
+    private static final String GET_BY_COURSE = "SELECT user_id, course_id, feedback_body, grade FROM feedback WHERE course_id=?";
+    private static final String GET_ALL = "SELECT user_id, course_id, feedback_body, grade FROM feedback";
     private static final String ADD = "INSERT INTO feedback(user_id, course_id, feedback_body, grade) VALUES(?, ?, ?, ?)";
     private static final String DELETE = "DELETE FROM feedback WHERE user_id=? AND course_id=?";
     private static final String UPDATE = "UPDATE feedback SET feedback=?, grade=? WHERE user_id=? AND course_id=?";
 
     private Connection getConnection() {
-        ConnectionPool connectionPool = ConnectionPool.getInstance(10);
+        ConnectionPool connectionPool = ConnectionPool.getInstance();
         return connectionPool.getConnection();
     }
 
