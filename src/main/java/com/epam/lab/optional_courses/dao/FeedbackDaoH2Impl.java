@@ -1,5 +1,6 @@
 package com.epam.lab.optional_courses.dao;
 
+import com.epam.lab.optional_courses.dao.connectionPools.ConnectionPool;
 import com.epam.lab.optional_courses.entity.Course;
 import com.epam.lab.optional_courses.entity.Feedback;
 import com.epam.lab.optional_courses.entity.User;
@@ -20,7 +21,7 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
 
     private UserDaoH2Impl userDaoH2;
     private CourseDaoH2Impl courseDaoH2;
-    private final Logger log = LogManager.getLogger(FeedbackDaoH2Impl.class);
+    private static final Logger log = LogManager.getLogger(FeedbackDaoH2Impl.class);
 
     private static final String GET_BY_USER_AND_COURSE = "SELECT * FROM feedback WHERE user_id=? AND course_id=?";
     private static final String GET_BY_USER = "SELECT * FROM feedback WHERE user_id=?";
@@ -31,7 +32,8 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
     private static final String UPDATE = "UPDATE feedback SET feedback=?, grade=? WHERE user_id=? AND course_id=?";
 
     private Connection getConnection() {
-
+        ConnectionPool connectionPool = ConnectionPool.getInstance(10);
+        return connectionPool.getConnection();
     }
 
     /**
@@ -43,7 +45,7 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
      */
     @Override
     public Feedback getFeedbackByUserAndCourse(User user, Course course) {
-        Connection connection;
+        Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         try {
@@ -63,12 +65,11 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
             } else {
                 resultFeedback = null;
             }
-            connection.close();
             return resultFeedback;
         } catch (SQLException e) {
             log.log(Level.ERROR, e);
         } finally {
-            closeResources(statement, resultSet);
+            closeResources(statement, resultSet, connection);
         }
         return null;
     }
@@ -81,16 +82,17 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
      */
     @Override
     public List<Feedback> getFeedbacksByUser(User user) {
-        Connection connection;
+        Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
+        List<Feedback> resultList = new ArrayList<>();
         try {
             connection = getConnection();
             statement = connection.prepareStatement(GET_BY_USER);
             statement.setInt(1, user.getId());
+            courseDaoH2 = new CourseDaoH2Impl();
 
             resultSet = statement.executeQuery();
-            List<Feedback> resultList = new ArrayList<>();
             while (resultSet.next()) {
                 Feedback resultFeedback = new Feedback();
                 resultFeedback.setUser(user);
@@ -99,14 +101,13 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
                 resultFeedback.setFeedbackBody(resultSet.getString("feedback_body"));
                 resultList.add(resultFeedback);
             }
-            connection.close();
             return resultList;
         } catch (SQLException e) {
             log.log(Level.ERROR, e);
         } finally {
-            closeResources(statement, resultSet);
+            closeResources(statement, resultSet, connection);
         }
-        return null;
+        return resultList;
     }
 
     /**
@@ -117,7 +118,32 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
      */
     @Override
     public List<Feedback> getFeedbacksByCourse(Course course) {
-        return null;
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        List<Feedback> resultList = new ArrayList<>();
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(GET_BY_COURSE);
+            statement.setInt(1, course.getId());
+            userDaoH2 = new UserDaoH2Impl();
+
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Feedback resultFeedback = new Feedback();
+                resultFeedback.setUser(userDaoH2.getUserById((resultSet.getInt("user_id"))));
+                resultFeedback.setCourse(course);
+                resultFeedback.setGrade(resultSet.getInt("grade"));
+                resultFeedback.setFeedbackBody(resultSet.getString("feedback_body"));
+                resultList.add(resultFeedback);
+            }
+            return resultList;
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+        } finally {
+            closeResources(statement, resultSet, connection);
+        }
+        return resultList;
     }
 
     /**
@@ -127,7 +153,32 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
      */
     @Override
     public List<Feedback> getAllFeedbacks() {
-        return null;
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        List<Feedback> resultList = new ArrayList<>();
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(GET_ALL);
+            courseDaoH2 = new CourseDaoH2Impl();
+            userDaoH2 = new UserDaoH2Impl();
+
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Feedback resultFeedback = new Feedback();
+                resultFeedback.setUser(userDaoH2.getUserById((resultSet.getInt("user_id"))));
+                resultFeedback.setCourse(courseDaoH2.getCourseById((resultSet.getInt("course_id"))));
+                resultFeedback.setGrade(resultSet.getInt("grade"));
+                resultFeedback.setFeedbackBody(resultSet.getString("feedback_body"));
+                resultList.add(resultFeedback);
+            }
+            return resultList;
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+        } finally {
+            closeResources(statement, resultSet, connection);
+        }
+        return resultList;
     }
 
     /**
@@ -138,7 +189,25 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
      */
     @Override
     public boolean addFeedback(Feedback feedback) {
-        return false;
+        Connection connection = null;
+        PreparedStatement statement = null;
+        int rowNumber;
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(ADD);
+            statement.setInt(1, feedback.getUser().getId());
+            statement.setInt(2, feedback.getCourse().getId());
+            statement.setString(3, feedback.getFeedbackBody());
+            statement.setInt(4, feedback.getGrade());
+
+            rowNumber = statement.executeUpdate();
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+            return false;
+        } finally {
+            closeResources(statement, null, connection);
+        }
+        return rowNumber > 0;
     }
 
     /**
@@ -149,7 +218,23 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
      */
     @Override
     public boolean deleteFeedback(Feedback feedback) {
-        return false;
+        Connection connection = null;
+        PreparedStatement statement = null;
+        int rowNumber;
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(DELETE);
+            statement.setInt(1, feedback.getUser().getId());
+            statement.setInt(2, feedback.getCourse().getId());
+
+            rowNumber = statement.executeUpdate();
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+            return false;
+        } finally {
+            closeResources(statement, null, connection);
+        }
+        return rowNumber > 0;
     }
 
     /**
@@ -159,14 +244,30 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
      * @return - previous Feedback object from DB
      */
     @Override
-    public Feedback updateFeedback(Feedback feedback) {
-        return null;
+    public boolean updateFeedback(Feedback feedback) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        int rowNumber = 0;
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(UPDATE);
+            statement.setInt(1, feedback.getUser().getId());
+            statement.setInt(2, feedback.getCourse().getId());
+
+            rowNumber = statement.executeUpdate();
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+        } finally {
+            closeResources(statement, null, connection);
+        }
+        return rowNumber > 0;
     }
 
-    private void closeResources(PreparedStatement statement, ResultSet resultSet) {
+    private void closeResources(PreparedStatement statement, ResultSet resultSet, Connection connection) {
         try {
             if (statement != null) statement.close();
             if (resultSet != null) resultSet.close();
+            if (connection != null) connection.close();
         } catch (SQLException e1) {
             log.log(Level.ERROR, e1);
             e1.printStackTrace();
