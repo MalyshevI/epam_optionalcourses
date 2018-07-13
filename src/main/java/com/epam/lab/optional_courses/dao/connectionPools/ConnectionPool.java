@@ -15,7 +15,7 @@ import org.apache.logging.log4j.*;
  * @author Nikolai Tikhonov <akalji@ya.ru> akalji
  */
 public class ConnectionPool {
-    private final Logger log = LogManager.getLogger(ConnectionPool.class);
+    private static final Logger log = LogManager.getLogger(ConnectionPool.class);
 
     private static ConnectionPool instance;
     private ArrayList<Connection> freeConnections = new ArrayList<>();
@@ -31,7 +31,7 @@ public class ConnectionPool {
      * @return connection pool instance
      * @author Nikolai Tikhonov <akalji@ya.ru> akalji
      */
-    public static synchronized ConnectionPool getInstance(int maxConn) {
+    public static synchronized ConnectionPool getInstance() {
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream("resources/database.properties"));
@@ -43,7 +43,7 @@ public class ConnectionPool {
         String password = properties.getProperty("password");
 
         if (instance == null) {
-            instance = new ConnectionPool(URL, user, password, maxConn);
+            instance = new ConnectionPool(URL, user, password, 10);
         }
         return instance;
     }
@@ -95,7 +95,7 @@ public class ConnectionPool {
             try {
                 con.close();
             } catch (SQLException e) {
-                log.log(Level.ERROR,"Connection closing error", e);
+                log.log(Level.ERROR, "Connection closing error", e);
             }
         }
         freeConnections.clear();
@@ -119,7 +119,7 @@ public class ConnectionPool {
                 con = DriverManager.getConnection(URL, user, password);
             }
         } catch (SQLException e) {
-            log.log(Level.ERROR,"Connection opening error", e);
+            log.log(Level.ERROR, "Connection opening error", e);
             throw new RuntimeException(e);
         }
         return con;
