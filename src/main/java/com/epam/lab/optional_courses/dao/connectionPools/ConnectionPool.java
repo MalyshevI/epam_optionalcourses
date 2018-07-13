@@ -31,7 +31,7 @@ public class ConnectionPool {
      * @return connection pool instance
      * @author Nikolai Tikhonov <akalji@ya.ru> akalji
      */
-    public static synchronized ConnectionPool getInstance(int maxConn) {
+    public static synchronized ConnectionPool getInstance() {
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream("resources/database.properties"));
@@ -43,7 +43,7 @@ public class ConnectionPool {
         String password = properties.getProperty("password");
 
         if (instance == null) {
-            instance = new ConnectionPool(URL, user, password, maxConn);
+            instance = new ConnectionPool(URL, user, password, 10);
         }
         return instance;
     }
