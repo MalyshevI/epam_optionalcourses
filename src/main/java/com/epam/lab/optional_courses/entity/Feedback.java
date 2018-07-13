@@ -36,19 +36,19 @@ public class Feedback {
         return Objects.hash(course, user);
     }
 
-    public int getUser() {
+    public User getUser() {
         return user;
     }
 
-    public void setUser(int user) {
+    public void setUser(User user) {
         this.user = user;
     }
 
-    public int getCourse() {
+    public Course getCourse() {
         return course;
     }
 
-    public void setCourse(int course) {
+    public void setCourse(Course course) {
         this.course = course;
     }
 
