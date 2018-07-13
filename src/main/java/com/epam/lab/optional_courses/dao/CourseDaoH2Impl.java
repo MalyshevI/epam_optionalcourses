@@ -33,7 +33,7 @@ public class CourseDaoH2Impl implements CourseDao {
      * @return Course object
      */
     @Override
-    public Course getCourseByID(int id) {
+    public Course getCourseById(int id) {
         return null;
     }
 

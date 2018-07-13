@@ -17,7 +17,7 @@ public interface  CourseDao {
      * @param id - given id of Course
      * @return Course object
      */
-    Course getCourseByID(int id);
+    Course getCourseById(int id);
 
     /**
      * Return list of all exist Course objects
