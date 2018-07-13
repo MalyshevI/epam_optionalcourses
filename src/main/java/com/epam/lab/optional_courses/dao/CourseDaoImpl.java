@@ -10,46 +10,69 @@ import java.util.List;
  *
  * @author Ilia_Malyshev
  */
-public interface  CourseDao {
-
+public class CourseDaoImpl implements CourseDao {
     /**
      * Return Course object from DataBase corresponding to given id
+     *
      * @param id - given id of Course
      * @return Course object
      */
-    Course getCourseByID(int id);
+    @Override
+    public Course getCourseByID(int id) {
+        return null;
+    }
 
     /**
      * Return list of all exist Course objects
+     *
      * @return list of Course objects
      */
-    List<Course> getAllCourses();
+    @Override
+    public List<Course> getAllCourses() {
+        return null;
+    }
 
     /**
      * Returns the list of courses that the specified user is leading
+     *
      * @param tutor - given object User
      * @return list of Course objects
      */
-    List<Course> getCourseByTutor(User tutor);
+    @Override
+    public List<Course> getCourseByTutor(User tutor) {
+        return null;
+    }
 
     /**
      * Add given Course object to DataBase
+     *
      * @param course - given Course object
      * @return - true if adding is successful
      */
-    boolean addCourse(Course course);
+    @Override
+    public boolean addCourse(Course course) {
+        return false;
+    }
 
     /**
      * Delete given Course object in DataBase
+     *
      * @param course - given Course object
      * @return - true if deleting is successful
      */
-    boolean deleteCourse(Course course);
+    @Override
+    public boolean deleteCourse(Course course) {
+        return false;
+    }
 
     /**
      * Update Course in database with new Course object
+     *
      * @param course - given Course object
      * @return - previous Course object from DB
      */
-    Course updateCourse(Course course);
+    @Override
+    public Course updateCourse(Course course) {
+        return null;
+    }
 }
