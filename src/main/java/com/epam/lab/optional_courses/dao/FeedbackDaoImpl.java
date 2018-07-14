@@ -8,32 +8,50 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * That class implements Data Access Object for Feedback
  *
  * @author Anton Kulaga
  */
-public class FeedbackDaoH2Impl implements FeedbackDao {
+public class FeedbackDaoImpl implements FeedbackDao {
 
-    private UserDaoH2Impl userDaoH2;
-    private CourseDaoH2Impl courseDaoH2;
-    private static final Logger log = LogManager.getLogger(FeedbackDaoH2Impl.class);
+    private static final Logger log = LogManager.getLogger(FeedbackDaoImpl.class);
+    private static final ConnectionPool connectionPool = ConnectionPool.getInstance();
 
-    private static final String GET_BY_USER_AND_COURSE = "SELECT user_id, course_id, feedback_body, grade FROM mydb.feedback WHERE user_id=? AND course_id=?";
-    private static final String GET_BY_USER = "SELECT user_id, course_id, feedback_body, grade FROM mydb.feedback WHERE user_id=?";
-    private static final String GET_BY_COURSE = "SELECT user_id, course_id, feedback_body, grade FROM mydb.feedback WHERE course_id=?";
-    private static final String GET_ALL = "SELECT user_id, course_id, feedback_body, grade FROM mydb.feedback";
-    private static final String ADD = "INSERT INTO mydb.feedback(user_id, course_id, feedback_body, grade) VALUES(?, ?, ?, ?)";
-    private static final String DELETE = "DELETE FROM mydb.feedback WHERE user_id=? AND course_id=?";
-    private static final String UPDATE = "UPDATE mydb.feedback SET feedback=?, grade=? WHERE user_id=? AND course_id=?";
+    private static final String GET_BY_USER_AND_COURSE;
+    private static final String GET_BY_USER;
+    private static final String GET_BY_COURSE;
+    private static final String GET_ALL;
+    private static final String ADD;
+    private static final String DELETE;
+    private static final String UPDATE;
 
-    private Connection getConnection() {
-        ConnectionPool connectionPool = ConnectionPool.getInstance();
-        return connectionPool.getConnection();
+    private UserDao userDao;
+    private CourseDao courseDao;
+
+
+    static {
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileInputStream("src/main/resources/sql_request_body_Mysql.properties"));
+            log.log(Level.INFO, "SQL request bodies for feedbacks loaded successfully");
+        } catch (IOException e) {
+            log.log(Level.ERROR, "Can't load SQL request bodies for feedbacks", e);
+        }
+        GET_BY_USER_AND_COURSE = properties.getProperty("GET_FEEDBACK_BY_USER_AND_COURSE");
+        GET_BY_USER = properties.getProperty("GET_FEEDBACK_BY_USER");
+        GET_BY_COURSE = properties.getProperty("GET_FEEDBACK_BY_COURSE");
+        GET_ALL = properties.getProperty("GET_ALL_FEEDBACKS");
+        ADD = properties.getProperty("ADD_FEEDBACK");
+        DELETE = properties.getProperty("DELETE_FEEDBACK");
+        UPDATE = properties.getProperty("UPDATE_FEEDBACK");
     }
 
     /**
@@ -49,7 +67,7 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         try {
-            connection = getConnection();
+            connection = connectionPool.getConnection();
             statement = connection.prepareStatement(GET_BY_USER_AND_COURSE);
             statement.setInt(1, user.getId());
             statement.setInt(2, course.getId());
@@ -87,16 +105,16 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
         ResultSet resultSet = null;
         List<Feedback> resultList = new ArrayList<>();
         try {
-            connection = getConnection();
+            connection = connectionPool.getConnection();
             statement = connection.prepareStatement(GET_BY_USER);
             statement.setInt(1, user.getId());
-            courseDaoH2 = new CourseDaoH2Impl();
+            courseDao = new CourseDaoImpl();
 
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 Feedback resultFeedback = new Feedback();
                 resultFeedback.setUser(user);
-                resultFeedback.setCourse(courseDaoH2.getCourseById((resultSet.getInt("course_id"))));
+                resultFeedback.setCourse(courseDao.getCourseById((resultSet.getInt("course_id"))));
                 resultFeedback.setGrade(resultSet.getInt("grade"));
                 resultFeedback.setFeedbackBody(resultSet.getString("feedback_body"));
                 resultList.add(resultFeedback);
@@ -123,15 +141,15 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
         ResultSet resultSet = null;
         List<Feedback> resultList = new ArrayList<>();
         try {
-            connection = getConnection();
+            connection = connectionPool.getConnection();
             statement = connection.prepareStatement(GET_BY_COURSE);
             statement.setInt(1, course.getId());
-            userDaoH2 = new UserDaoH2Impl();
+            userDao = new UserDaoImpl();
 
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 Feedback resultFeedback = new Feedback();
-                resultFeedback.setUser(userDaoH2.getUserById((resultSet.getInt("user_id"))));
+                resultFeedback.setUser(userDao.getUserById((resultSet.getInt("user_id"))));
                 resultFeedback.setCourse(course);
                 resultFeedback.setGrade(resultSet.getInt("grade"));
                 resultFeedback.setFeedbackBody(resultSet.getString("feedback_body"));
@@ -158,16 +176,16 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
         ResultSet resultSet = null;
         List<Feedback> resultList = new ArrayList<>();
         try {
-            connection = getConnection();
+            connection = connectionPool.getConnection();
             statement = connection.prepareStatement(GET_ALL);
-            courseDaoH2 = new CourseDaoH2Impl();
-            userDaoH2 = new UserDaoH2Impl();
+            courseDao = new CourseDaoImpl();
+            userDao = new UserDaoImpl();
 
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 Feedback resultFeedback = new Feedback();
-                resultFeedback.setUser(userDaoH2.getUserById((resultSet.getInt("user_id"))));
-                resultFeedback.setCourse(courseDaoH2.getCourseById((resultSet.getInt("course_id"))));
+                resultFeedback.setUser(userDao.getUserById((resultSet.getInt("user_id"))));
+                resultFeedback.setCourse(courseDao.getCourseById((resultSet.getInt("course_id"))));
                 resultFeedback.setGrade(resultSet.getInt("grade"));
                 resultFeedback.setFeedbackBody(resultSet.getString("feedback_body"));
                 resultList.add(resultFeedback);
@@ -193,7 +211,7 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
         PreparedStatement statement = null;
         int rowNumber;
         try {
-            connection = getConnection();
+            connection = connectionPool.getConnection();
             statement = connection.prepareStatement(ADD);
             statement.setInt(1, feedback.getUser().getId());
             statement.setInt(2, feedback.getCourse().getId());
@@ -222,7 +240,7 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
         PreparedStatement statement = null;
         int rowNumber;
         try {
-            connection = getConnection();
+            connection = connectionPool.getConnection();
             statement = connection.prepareStatement(DELETE);
             statement.setInt(1, feedback.getUser().getId());
             statement.setInt(2, feedback.getCourse().getId());
@@ -249,7 +267,7 @@ public class FeedbackDaoH2Impl implements FeedbackDao {
         PreparedStatement statement = null;
         int rowNumber = 0;
         try {
-            connection = getConnection();
+            connection = connectionPool.getConnection();
             statement = connection.prepareStatement(UPDATE);
             statement.setInt(1, feedback.getUser().getId());
             statement.setInt(2, feedback.getCourse().getId());

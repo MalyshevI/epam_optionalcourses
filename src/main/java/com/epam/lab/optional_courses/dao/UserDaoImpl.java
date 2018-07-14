@@ -1,56 +1,55 @@
 package com.epam.lab.optional_courses.dao;
 
 import com.epam.lab.optional_courses.dao.connectionPools.ConnectionPool;
-import com.epam.lab.optional_courses.entity.Course;
 import com.epam.lab.optional_courses.entity.User;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
-public class UserDaoH2Impl implements UserDAO {
+public class UserDaoImpl implements UserDao {
 
-    private final Logger log = LogManager.getLogger(ConnectionPool.class);
-    ConnectionPool connectionPool = ConnectionPool.getInstance();
-    private static final String FIND_ALL = "SELECT id, first_name, last_name, email,password, is_admin, group_id FROM mydb.users ORDER BY id";
-    private static final String FIND_BY_ID = "SELECT id, first_name, last_name, email,password, is_admin, group_id FROM mydb.users WHERE id=?";
-    private static final String FIND_BY_NAME = "SELECT id, first_name, last_name, email,password, is_admin, group_id FROM mydb.users WHERE name=?";
-    private static final String FIND_BY_EMAIL_AND_PASSWORD = "SELECT FROM mydb.users WHERE email=?, password = ?";
-    private static final String INSERT = "INSERT INTO mydb.users(first_name," +
-            " last_name," +
-            " email," +
-            " password," +
-            " is_admin," +
-            " group_id) VALUES(?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE = "UPDATE mydb.user SET first_name = ?," +
-            " last_name = ?," +
-            " email = ?," +
-            " password = ?," +
-            " is_admin = ?," +
-            " group_id = ?" +
-            " WHERE id=?";
-    private static final String DELETE = "DELETE FROM mydb.users WHERE id=?";
+    private static final Logger log = LogManager.getLogger(ConnectionPool.class);
+    private static final ConnectionPool connectionPool = ConnectionPool.getInstance();
 
-    private void closeResources(PreparedStatement statement, ResultSet resultSet, Connection connection) {
+    private static final String FIND_ALL;
+    private static final String FIND_BY_ID;
+    private static final String FIND_BY_NAME;
+    private static final String FIND_BY_EMAIL_AND_PASSWORD;
+    private static final String INSERT;
+    private static final String UPDATE;
+    private static final String DELETE;
+
+    static {
+        Properties properties = new Properties();
         try {
-            if (statement != null) statement.close();
-            if (resultSet != null) resultSet.close();
-            if (connection != null) connection.close();
-        } catch (SQLException e1) {
-            log.log(Level.ERROR, e1);
-            e1.printStackTrace();
+            properties.load(new FileInputStream("src/main/resources/sql_request_body_Mysql.properties"));
+            log.log(Level.INFO, "SQL request bodies for users loaded successfully");
+        } catch (IOException e) {
+            log.log(Level.ERROR, "Can't load SQL request bodies for users", e);
         }
+        FIND_ALL = properties.getProperty("FIND_ALL_USERS");
+        FIND_BY_ID = properties.getProperty("GET_USER_BY_ID");
+        FIND_BY_NAME = properties.getProperty("GET_USER_BY_NAME");
+        FIND_BY_EMAIL_AND_PASSWORD = properties.getProperty("GET_USER_BY_EMAIL_AND_PASSWORD");
+        INSERT = properties.getProperty("ADD_USER");
+        UPDATE = properties.getProperty("UPDATE_USER");
+        DELETE = properties.getProperty("DELETE_USER");
     }
+
 
     @Override
     public List<User> getAllUsers() {
         Connection conn = connectionPool.getConnection();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        List<User> list = new ArrayList<User>();
+        List<User> list = new ArrayList<>();
         try {
             stmt = conn.prepareStatement(FIND_ALL);
             rs = stmt.executeQuery();
@@ -68,27 +67,25 @@ public class UserDaoH2Impl implements UserDAO {
 
                 list.add(user);
             }
-        }
-        catch (SQLException e){
+        } catch (SQLException e) {
             log.log(Level.ERROR, e);
-        }
-        finally {
-            closeResources(stmt,rs, conn);
+        } finally {
+            closeResources(stmt, rs, conn);
         }
         return list;
     }
 
     @Override
-    public User getUserById(int id){
+    public User getUserById(int id) {
         Connection conn = connectionPool.getConnection();
         PreparedStatement stmt = null;
-        User user = null;
         ResultSet rs = null;
         try {
             stmt = conn.prepareStatement(FIND_BY_ID);
             rs = stmt.executeQuery();
-
-            if (rs.next()){
+            User user;
+            if (rs.next()) {
+                user = new User();
                 user.setId(rs.getInt("id"));
                 user.setFirstName(rs.getString("first_name"));
                 user.setLastName(rs.getString("last_name"));
@@ -99,22 +96,19 @@ public class UserDaoH2Impl implements UserDAO {
                 user.setAdmin(rs.getBoolean("is_admin"));
 
                 return user;
-            }
-            else{
+            } else {
                 return null;
             }
-        }
-        catch (SQLException e){
+        } catch (SQLException e) {
             log.log(Level.ERROR, e);
-        }
-        finally {
-            closeResources(stmt,rs, conn);
+        } finally {
+            closeResources(stmt, rs, conn);
         }
         return null;
     }
 
     @Override
-    public boolean addUser(User user){
+    public boolean addUser(User user) {
         Connection conn = connectionPool.getConnection();
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -129,24 +123,22 @@ public class UserDaoH2Impl implements UserDAO {
             int result = stmt.executeUpdate();
             rs = stmt.getGeneratedKeys();
 
-            if (rs.next()){
+            if (rs.next()) {
                 user.setId(rs.getInt(1));
             }
 
             return (result > 0);
-        }
-        catch (SQLException e){
+        } catch (SQLException e) {
             log.log(Level.ERROR, e);
-        }
-        finally {
-            closeResources(stmt,rs, conn);
+        } finally {
+            closeResources(stmt, rs, conn);
         }
 
         return false;
     }
 
     @Override
-    public boolean updateUser(User user){
+    public boolean updateUser(User user) {
         Connection conn = connectionPool.getConnection();
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -161,17 +153,15 @@ public class UserDaoH2Impl implements UserDAO {
             int result = stmt.executeUpdate();
             rs = stmt.getGeneratedKeys();
 
-            if (rs.next()){
+            if (rs.next()) {
                 user.setId(rs.getInt(1));
             }
 
             return (result > 0);
-        }
-        catch (SQLException e){
+        } catch (SQLException e) {
             log.log(Level.ERROR, e);
-        }
-        finally {
-            closeResources(stmt,rs, conn);
+        } finally {
+            closeResources(stmt, rs, conn);
         }
 
         return false;
@@ -187,12 +177,29 @@ public class UserDaoH2Impl implements UserDAO {
             stmt.setInt(1, user.getId());
 
             return stmt.executeUpdate() > 0;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             log.log(Level.ERROR, e);
-        }
-        finally {
-            closeResources(stmt,rs, conn);
+        } finally {
+            closeResources(stmt, rs, conn);
         }
         return false;
-    }}
+    }
+
+    private void closeResources(PreparedStatement statement, ResultSet resultSet, Connection connection) {
+        try {
+            if (statement != null) statement.close();
+            if (resultSet != null) resultSet.close();
+            if (connection != null) connection.close();
+        } catch (SQLException e1) {
+            log.log(Level.ERROR, e1);
+            e1.printStackTrace();
+        }
+    }
+}
+
+
+
+
+
+
+
