@@ -56,11 +56,10 @@ public class UserDaoImpl implements UserDao {
 
             while (rs.next()) {
                 User user = new User();
-                user.setId(rs.getInt("id"));
+                user.setId(rs.getInt("user_id"));
                 user.setFirstName(rs.getString("first_name"));
                 user.setLastName(rs.getString("last_name"));
-                Array a = rs.getArray("password");
-                char[] password = (char[]) a.getArray();
+                String password = rs.getString("password");
                 user.setPassword(password);
                 user.setEmail(rs.getString("email"));
                 user.setAdmin(rs.getBoolean("is_admin"));
@@ -86,11 +85,10 @@ public class UserDaoImpl implements UserDao {
             User user;
             if (rs.next()) {
                 user = new User();
-                user.setId(rs.getInt("id"));
+                user.setId(rs.getInt("user_id"));
                 user.setFirstName(rs.getString("first_name"));
                 user.setLastName(rs.getString("last_name"));
-                Array a = rs.getArray("password");
-                char[] password = (char[]) a.getArray();
+                String password = rs.getString("password");
                 user.setPassword(password);
                 user.setEmail(rs.getString("email"));
                 user.setAdmin(rs.getBoolean("is_admin"));
@@ -143,19 +141,15 @@ public class UserDaoImpl implements UserDao {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
-            stmt = conn.prepareStatement(UPDATE, Statement.RETURN_GENERATED_KEYS);
+            stmt = conn.prepareStatement(UPDATE);
             stmt.setString(1, user.getFirstName());
             stmt.setString(2, user.getLastName());
             stmt.setString(3, user.getEmail());
-            stmt.setObject(4, user.getPassword());
+            stmt.setString(4, user.getPassword());
             stmt.setBoolean(5, user.isAdmin());
+            stmt.setInt(6, user.getId());
 
             int result = stmt.executeUpdate();
-            rs = stmt.getGeneratedKeys();
-
-            if (rs.next()) {
-                user.setId(rs.getInt(1));
-            }
 
             return (result > 0);
         } catch (SQLException e) {
