@@ -26,14 +26,14 @@ public class CourseDaoH2Impl implements CourseDao {
 
     private final Logger log = LogManager.getLogger(CourseDaoH2Impl.class);
 
-    private static final String GET_BY_ID = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM courses WHERE course_id=?";
-    private static final String GET_ALL = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM courses";
-    private static final String GET_BY_TUTOR = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM courses WHERE tutor_id=?";
-    private static final String GET_BY_USER = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM courses WHERE tutor_id=?";
+    private static final String GET_BY_ID = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM mydb.courses WHERE course_id=?";
+    private static final String GET_ALL = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM mydb.courses";
+    private static final String GET_BY_TUTOR = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM mydb.courses WHERE tutor_id=?";
+    private static final String GET_BY_USER = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM mydb.courses WHERE tutor_id=?";
 
     private static final String ADD_COURSE = "INSERT INTO courses(course_name, start_date, finish date, tutor_id, capacity) VALUES(?, ?, ?, ?, ?)";
-    private static final String DELETE = "DELETE FROM courses WHERE course_id=?";
-    private static final String UPDATE = "UPDATE courses SET course_name=?, start_date=?, finish_date=?, tutor_id=?, capacity=? WHERE course_id=?";
+    private static final String DELETE = "DELETE FROM mydb.courses WHERE course_id=?";
+    private static final String UPDATE = "UPDATE mydb.courses SET course_name=?, start_date=?, finish_date=?, tutor_id=?, capacity=? WHERE course_id=?";
 
     private Connection getConnection() {
         ConnectionPool connectionPool = ConnectionPool.getInstance();
