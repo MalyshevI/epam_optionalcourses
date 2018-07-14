@@ -1,6 +1,7 @@
 package com.epam.lab.optional_courses.dao;
 
 import com.epam.lab.optional_courses.dao.connectionPools.ConnectionPool;
+import com.epam.lab.optional_courses.entity.Course;
 import com.epam.lab.optional_courses.entity.User;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -81,6 +82,7 @@ public class UserDaoImpl implements UserDao {
         ResultSet rs = null;
         try {
             stmt = conn.prepareStatement(FIND_BY_ID);
+            stmt.setInt(1,id);
             rs = stmt.executeQuery();
             User user;
             if (rs.next()) {

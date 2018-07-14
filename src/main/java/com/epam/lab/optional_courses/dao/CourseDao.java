@@ -59,4 +59,6 @@ public interface  CourseDao {
      * @return - previous Course object from DB
      */
     boolean updateCourse(Course course);
+
+    boolean enrollUserOnCourse(Course course, User user);
 }
