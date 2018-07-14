@@ -1,5 +1,6 @@
 package com.epam.lab.optional_courses.entity;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -91,5 +92,18 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(id, email, password);
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", password=" + Arrays.toString(password) +
+                ", isAdmin=" + isAdmin +
+                ", groupId=" + groupId +
+                '}';
     }
 }

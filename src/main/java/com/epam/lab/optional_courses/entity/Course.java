@@ -77,4 +77,16 @@ public class Course {
     public void setCapacity(int capacity) {
         this.capacity = capacity;
     }
+
+    @Override
+    public String toString() {
+        return "Course{" +
+                "id=" + id +
+                ", courseName='" + courseName + '\'' +
+                ", startDate=" + startDate +
+                ", finishDate=" + finishDate +
+                ", tutor=" + tutor +
+                ", capacity=" + capacity +
+                '}';
+    }
 }
