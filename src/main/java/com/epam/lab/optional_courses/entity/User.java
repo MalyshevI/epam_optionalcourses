@@ -14,13 +14,12 @@ public class User {
     private String firstName;
     private String lastName;
     private String email;
-    private char[] password;
+    private String password;
     private boolean isAdmin;
-    private int groupId;
 
     public User(){};
 
-    public User(int id, String firstName, String lastName, String email, char[] password, boolean isAdmin){
+    public User(int id, String firstName, String lastName, String email, String password, boolean isAdmin){
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -29,6 +28,13 @@ public class User {
         this.isAdmin = isAdmin;
     }
 
+    public User(String firstName, String lastName, String email, String password, boolean isAdmin){
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.isAdmin = isAdmin;
+    }
 
     public int getId(){
         return id;
@@ -62,11 +68,11 @@ public class User {
         this.email = email;
     }
 
-    public char[] getPassword(){
+    public String getPassword(){
         return password;
     }
 
-    public void setPassword(char[] password){
+    public void setPassword(String password){
         this.password = password;
     }
 
