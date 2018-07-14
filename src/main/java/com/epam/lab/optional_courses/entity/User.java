@@ -20,14 +20,13 @@ public class User {
 
     public User(){};
 
-    public User(int id, String firstName, String lastName, String email, char[] password, boolean isAdmin, int groupId){
+    public User(int id, String firstName, String lastName, String email, char[] password, boolean isAdmin){
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.isAdmin = isAdmin;
-        this.groupId = groupId;
     }
 
 
@@ -77,14 +76,6 @@ public class User {
 
     public void setAdmin(boolean isAdmin) {
         this.isAdmin = isAdmin;
-    }
-
-    public int getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(int groupId) {
-        this.groupId = groupId;
     }
 
     @Override

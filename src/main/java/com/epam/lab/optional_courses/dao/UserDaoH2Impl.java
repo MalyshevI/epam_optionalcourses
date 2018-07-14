@@ -15,24 +15,24 @@ public class UserDaoH2Impl implements UserDAO {
 
     private final Logger log = LogManager.getLogger(ConnectionPool.class);
     ConnectionPool connectionPool = ConnectionPool.getInstance();
-    private static final String FIND_ALL = "SELECT id, first_name, last_name, email,password, is_admin, group_id FROM users ORDER BY id";
-    private static final String FIND_BY_ID = "SELECT id, first_name, last_name, email,password, is_admin, group_id FROM users WHERE id=?";
-    private static final String FIND_BY_NAME = "SELECT id, first_name, last_name, email,password, is_admin, group_id FROM users WHERE name=?";
-    private static final String FIND_BY_EMAIL_AND_PASSWORD = "SELECT FROM users WHERE email=?, password = ?";
-    private static final String INSERT = "INSERT INTO users(first_name," +
+    private static final String FIND_ALL = "SELECT id, first_name, last_name, email,password, is_admin, group_id FROM mydb.users ORDER BY id";
+    private static final String FIND_BY_ID = "SELECT id, first_name, last_name, email,password, is_admin, group_id FROM mydb.users WHERE id=?";
+    private static final String FIND_BY_NAME = "SELECT id, first_name, last_name, email,password, is_admin, group_id FROM mydb.users WHERE name=?";
+    private static final String FIND_BY_EMAIL_AND_PASSWORD = "SELECT FROM mydb.users WHERE email=?, password = ?";
+    private static final String INSERT = "INSERT INTO mydb.users(first_name," +
             " last_name," +
             " email," +
             " password," +
             " is_admin," +
             " group_id) VALUES(?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE = "UPDATE user SET first_name = ?," +
+    private static final String UPDATE = "UPDATE mydb.user SET first_name = ?," +
             " last_name = ?," +
             " email = ?," +
             " password = ?," +
             " is_admin = ?," +
             " group_id = ?" +
             " WHERE id=?";
-    private static final String DELETE = "DELETE FROM users WHERE id=?";
+    private static final String DELETE = "DELETE FROM mydb.users WHERE id=?";
 
     private void closeResources(PreparedStatement statement, ResultSet resultSet, Connection connection) {
         try {
@@ -64,7 +64,6 @@ public class UserDaoH2Impl implements UserDAO {
                 char[] password = (char[]) a.getArray();
                 user.setPassword(password);
                 user.setEmail(rs.getString("email"));
-                user.setGroupId(rs.getInt("group_id"));
                 user.setAdmin(rs.getBoolean("is_admin"));
 
                 list.add(user);
@@ -97,7 +96,6 @@ public class UserDaoH2Impl implements UserDAO {
                 char[] password = (char[]) a.getArray();
                 user.setPassword(password);
                 user.setEmail(rs.getString("email"));
-                user.setGroupId(rs.getInt("group_id"));
                 user.setAdmin(rs.getBoolean("is_admin"));
 
                 return user;
@@ -127,7 +125,6 @@ public class UserDaoH2Impl implements UserDAO {
             stmt.setString(3, user.getEmail());
             stmt.setObject(4, user.getPassword());
             stmt.setBoolean(5, user.isAdmin());
-            stmt.setInt(6,user.getGroupId());
 
             int result = stmt.executeUpdate();
             rs = stmt.getGeneratedKeys();
@@ -160,7 +157,6 @@ public class UserDaoH2Impl implements UserDAO {
             stmt.setString(3, user.getEmail());
             stmt.setObject(4, user.getPassword());
             stmt.setBoolean(5, user.isAdmin());
-            stmt.setInt(6,user.getGroupId());
 
             int result = stmt.executeUpdate();
             rs = stmt.getGeneratedKeys();
@@ -199,5 +195,4 @@ public class UserDaoH2Impl implements UserDAO {
             closeResources(stmt,rs, conn);
         }
         return false;
-    }
-}
+    }}
