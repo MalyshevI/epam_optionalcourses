@@ -32,17 +32,17 @@ public class ConnectionPool {
      * @author Nikolai Tikhonov <akalji@ya.ru> akalji
      */
     public static synchronized ConnectionPool getInstance() {
-        Properties properties = new Properties();
-        try {
-            properties.load(new FileInputStream("resources/database.properties"));
-        } catch (IOException e) {
-
-        }
-        String URL = properties.getProperty("url");
-        String user = properties.getProperty("user");
-        String password = properties.getProperty("password");
-
         if (instance == null) {
+            Properties properties = new Properties();
+            try {
+                properties.load(new FileInputStream("src/main/resources/database.properties"));
+                log.log(Level.INFO,"DB connected successfully");
+            } catch (IOException e) {
+                log.log(Level.ERROR,"Can't open the DB configuration", e);
+            }
+            String URL = properties.getProperty("url");
+            String user = properties.getProperty("user");
+            String password = properties.getProperty("password");
             instance = new ConnectionPool(URL, user, password, 10);
         }
         return instance;
