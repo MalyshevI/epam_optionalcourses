@@ -33,6 +33,7 @@ public class CourseDaoImpl implements CourseDao {
     private static final String ADD_COURSE;
     private static final String DELETE;
     private static final String UPDATE;
+    private static final String ENROLL_USER;
 
     private UserDao userDao;
 
@@ -51,6 +52,7 @@ public class CourseDaoImpl implements CourseDao {
         ADD_COURSE = properties.getProperty("ADD_COURSE");
         DELETE = properties.getProperty("DELETE_COURSE");
         UPDATE = properties.getProperty("UPDATE_COURSE");
+        ENROLL_USER = properties.getProperty("ENROLL_USER_ON_COURSE");
     }
 
     /**
@@ -68,7 +70,7 @@ public class CourseDaoImpl implements CourseDao {
         try {
 
             connection = connectionPool.getConnection();
-
+            userDao = new UserDaoImpl();
             statement = connection.prepareStatement(GET_BY_ID);
             statement.setInt(1, id);
 
@@ -241,7 +243,6 @@ public class CourseDaoImpl implements CourseDao {
             connection = connectionPool.getConnection();
             statement = connection.prepareStatement(ADD_COURSE, Statement.RETURN_GENERATED_KEYS);
 
-
             statement.setString(1, course.getCourseName());
             statement.setDate(2, new java.sql.Date(course.getStartDate().getTime()));
             statement.setDate(3, new java.sql.Date(course.getFinishDate().getTime()));
@@ -250,7 +251,9 @@ public class CourseDaoImpl implements CourseDao {
 
             rowNumber = statement.executeUpdate();
             resultSet = statement.getGeneratedKeys();
-            course.setId(resultSet.getInt("course_id"));
+            if(resultSet.next()){
+                course.setId(resultSet.getInt(1));
+            }
         } catch (SQLException e) {
             log.log(Level.ERROR, e);
             return false;
@@ -306,16 +309,40 @@ public class CourseDaoImpl implements CourseDao {
             connection = connectionPool.getConnection();
             statement = connection.prepareStatement(UPDATE);
 
-
             statement.setString(1, course.getCourseName());
             statement.setDate(2, new java.sql.Date(course.getStartDate().getTime()));
             statement.setDate(3, new java.sql.Date(course.getFinishDate().getTime()));
             statement.setInt(4, course.getTutor().getId());
             statement.setInt(5, course.getCapacity());
+            statement.setInt(6, course.getId());
 
             rowNumber = statement.executeUpdate();
 
 
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+            return false;
+        } finally {
+            closeResources(statement, null, connection);
+        }
+        return rowNumber > 0;
+    }
+
+    @Override
+    public boolean enrollUserOnCourse(Course course, User user) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+
+        int rowNumber;
+
+        try {
+            connection = connectionPool.getConnection();
+            statement = connection.prepareStatement(ENROLL_USER);
+
+            statement.setInt(1, user.getId());
+            statement.setInt(2, course.getId());
+
+            rowNumber = statement.executeUpdate();
         } catch (SQLException e) {
             log.log(Level.ERROR, e);
             return false;
