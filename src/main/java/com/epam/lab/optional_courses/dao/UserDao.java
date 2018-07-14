@@ -5,7 +5,7 @@ import com.epam.lab.optional_courses.entity.User;
 
 import java.util.List;
 
-public interface UserDAO {
+public interface UserDao {
 
     List<User> getAllUsers();
 

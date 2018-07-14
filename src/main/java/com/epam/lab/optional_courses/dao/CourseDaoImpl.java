@@ -7,10 +7,13 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 
 /**
@@ -18,29 +21,36 @@ import java.util.List;
  *
  * @author Ilia_Malyshev
  */
-public class CourseDaoH2Impl implements CourseDao {
+public class CourseDaoImpl implements CourseDao {
 
-    private UserDaoH2Impl userDaoH2;
-    private CourseDaoH2Impl courseDaoH2;
+    private static final Logger log = LogManager.getLogger(CourseDaoImpl.class);
+    private static final ConnectionPool connectionPool = ConnectionPool.getInstance();
 
+    private static final String GET_BY_ID;
+    private static final String GET_ALL;
+    private static final String GET_BY_TUTOR;
+    private static final String GET_BY_USER;
+    private static final String ADD_COURSE;
+    private static final String DELETE;
+    private static final String UPDATE;
 
+    private UserDao userDao;
 
-
-
-    private final Logger log = LogManager.getLogger(CourseDaoH2Impl.class);
-
-    private static final String GET_BY_ID = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM mydb.courses WHERE course_id=?";
-    private static final String GET_ALL = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM mydb.courses";
-    private static final String GET_BY_TUTOR = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM mydb.courses WHERE tutor_id=?";
-    private static final String GET_BY_USER = "SELECT mydb.courses.course_id, mydb.courses.course_name, mydb.courses.start_date, mydb.courses.finish_date, mydb.courses.tutor_id, mydb.courses.capacity FROM mydb.users_courses WHERE user_id=? LEFT JOIN mydb.courses ON mydb.users_courses.course_id=mydb.courses.course_id";
-
-    private static final String ADD_COURSE = "INSERT INTO courses(course_name, start_date, finish date, tutor_id, capacity) VALUES(?, ?, ?, ?, ?)";
-    private static final String DELETE = "DELETE FROM mydb.courses WHERE course_id=?";
-    private static final String UPDATE = "UPDATE mydb.courses SET course_name=?, start_date=?, finish_date=?, tutor_id=?, capacity=? WHERE course_id=?";
-
-    private Connection getConnection() {
-        ConnectionPool connectionPool = ConnectionPool.getInstance();
-        return connectionPool.getConnection();
+    static {
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileInputStream("src/main/resources/sql_request_body_Mysql.properties"));
+            log.log(Level.INFO, "SQL request bodies for courses loaded successfully ");
+        } catch (IOException e) {
+            log.log(Level.ERROR, "Can't load SQL request bodies for courses", e);
+        }
+        GET_BY_ID = properties.getProperty("GET_COURSE_BY_ID");
+        GET_ALL = properties.getProperty("GET_ALL_COURSES");
+        GET_BY_TUTOR = properties.getProperty("GET_COURSES_BY_TUTOR");
+        GET_BY_USER = properties.getProperty("GET_COURSES_BY_USER");
+        ADD_COURSE = properties.getProperty("ADD_COURSE");
+        DELETE = properties.getProperty("DELETE_COURSE");
+        UPDATE = properties.getProperty("UPDATE_COURSE");
     }
 
     /**
@@ -57,7 +67,7 @@ public class CourseDaoH2Impl implements CourseDao {
         ResultSet resultSet = null;
         try {
 
-            connection = getConnection();
+            connection = connectionPool.getConnection();
 
             statement = connection.prepareStatement(GET_BY_ID);
             statement.setInt(1, id);
@@ -72,7 +82,7 @@ public class CourseDaoH2Impl implements CourseDao {
                 resultCourse.setCourseName(resultSet.getString("course_name"));
                 resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
                 resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
-                resultCourse.setTutor(userDaoH2.getUserById(resultSet.getInt("tutor_id")));
+                resultCourse.setTutor(userDao.getUserById(resultSet.getInt("tutor_id")));
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
             } else {
                 resultCourse = null;
@@ -100,9 +110,9 @@ public class CourseDaoH2Impl implements CourseDao {
         List<Course> resultList = new ArrayList<>();
 
         try {
-            connection = getConnection();
+            connection = connectionPool.getConnection();
             statement = connection.prepareStatement(GET_ALL);
-            userDaoH2 = new UserDaoH2Impl();
+            userDao = new UserDaoImpl();
 
             resultSet = statement.executeQuery();
 
@@ -113,7 +123,7 @@ public class CourseDaoH2Impl implements CourseDao {
                 resultCourse.setCourseName(resultSet.getString("course_name"));
                 resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
                 resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
-                resultCourse.setTutor(userDaoH2.getUserById(resultSet.getInt("tutor_id")));
+                resultCourse.setTutor(userDao.getUserById(resultSet.getInt("tutor_id")));
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
 
                 resultList.add(resultCourse);
@@ -142,9 +152,10 @@ public class CourseDaoH2Impl implements CourseDao {
 
         try {
 
+            connection = connectionPool.getConnection();
             statement = connection.prepareStatement(GET_BY_TUTOR);
-            statement.setInt(1,tutor.getId());
-            userDaoH2 = new UserDaoH2Impl();
+            statement.setInt(1, tutor.getId());
+            userDao = new UserDaoImpl();
 
             resultSet = statement.executeQuery();
 
@@ -183,10 +194,10 @@ public class CourseDaoH2Impl implements CourseDao {
         List<Course> resultList = new ArrayList<>();
 
         try {
-
+            connection = connectionPool.getConnection();
             statement = connection.prepareStatement(GET_BY_USER);
 
-            userDaoH2 = new UserDaoH2Impl();
+            userDao = new UserDaoImpl();
 
             resultSet = statement.executeQuery();
 
@@ -197,7 +208,7 @@ public class CourseDaoH2Impl implements CourseDao {
                 resultCourse.setCourseName(resultSet.getString("course_name"));
                 resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
                 resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
-                resultCourse.setTutor(userDaoH2.getUserById(resultSet.getInt("tutor_id")));  //wa
+                resultCourse.setTutor(userDao.getUserById(resultSet.getInt("tutor_id")));  //wa
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
 
                 resultList.add(resultCourse);
@@ -225,7 +236,7 @@ public class CourseDaoH2Impl implements CourseDao {
         int rowNumber;
 
         try {
-            connection = getConnection();
+            connection = connectionPool.getConnection();
             statement = connection.prepareStatement(ADD_COURSE, Statement.RETURN_GENERATED_KEYS);
 
 
@@ -261,7 +272,7 @@ public class CourseDaoH2Impl implements CourseDao {
         int rowNumber;
 
         try {
-            connection = getConnection();
+            connection = connectionPool.getConnection();
             statement = connection.prepareStatement(DELETE);
 
             statement.setInt(1, course.getId());
@@ -290,7 +301,7 @@ public class CourseDaoH2Impl implements CourseDao {
         int rowNumber;
 
         try {
-            connection = getConnection();
+            connection = connectionPool.getConnection();
             statement = connection.prepareStatement(UPDATE);
 
 
