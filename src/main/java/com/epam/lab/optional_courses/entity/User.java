@@ -107,9 +107,8 @@ public class User {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
-                ", password=" + Arrays.toString(password) +
+                ", password='" + password + '\'' +
                 ", isAdmin=" + isAdmin +
-                ", groupId=" + groupId +
                 '}';
     }
 }
