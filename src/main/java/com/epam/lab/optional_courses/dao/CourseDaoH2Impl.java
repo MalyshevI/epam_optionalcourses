@@ -24,12 +24,15 @@ public class CourseDaoH2Impl implements CourseDao {
     private CourseDaoH2Impl courseDaoH2;
 
 
+
+
+
     private final Logger log = LogManager.getLogger(CourseDaoH2Impl.class);
 
     private static final String GET_BY_ID = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM mydb.courses WHERE course_id=?";
     private static final String GET_ALL = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM mydb.courses";
     private static final String GET_BY_TUTOR = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM mydb.courses WHERE tutor_id=?";
-    private static final String GET_BY_USER = "SELECT course_id, course_name, start_date, finish_date, tutor_id, capacity FROM mydb.courses WHERE tutor_id=?";
+    private static final String GET_BY_USER = "SELECT mydb.courses.course_id, mydb.courses.course_name, mydb.courses.start_date, mydb.courses.finish_date, mydb.courses.tutor_id, mydb.courses.capacity FROM mydb.users_courses WHERE user_id=? LEFT JOIN mydb.courses ON mydb.users_courses.course_id=mydb.courses.course_id";
 
     private static final String ADD_COURSE = "INSERT INTO courses(course_name, start_date, finish date, tutor_id, capacity) VALUES(?, ?, ?, ?, ?)";
     private static final String DELETE = "DELETE FROM mydb.courses WHERE course_id=?";
@@ -140,6 +143,7 @@ public class CourseDaoH2Impl implements CourseDao {
         try {
 
             statement = connection.prepareStatement(GET_BY_TUTOR);
+            statement.setInt(1,tutor.getId());
             userDaoH2 = new UserDaoH2Impl();
 
             resultSet = statement.executeQuery();
@@ -151,7 +155,7 @@ public class CourseDaoH2Impl implements CourseDao {
                 resultCourse.setCourseName(resultSet.getString("course_name"));
                 resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
                 resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
-                resultCourse.setTutor(userDaoH2.getUserById(resultSet.getInt("tutor_id")));
+                resultCourse.setTutor(tutor);
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
 
                 resultList.add(resultCourse);
@@ -181,6 +185,7 @@ public class CourseDaoH2Impl implements CourseDao {
         try {
 
             statement = connection.prepareStatement(GET_BY_USER);
+
             userDaoH2 = new UserDaoH2Impl();
 
             resultSet = statement.executeQuery();
