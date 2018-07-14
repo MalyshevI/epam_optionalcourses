@@ -64,7 +64,6 @@ public class UserDaoH2Impl implements UserDAO {
                 char[] password = (char[]) a.getArray();
                 user.setPassword(password);
                 user.setEmail(rs.getString("email"));
-                user.setGroupId(rs.getInt("group_id"));
                 user.setAdmin(rs.getBoolean("is_admin"));
 
                 list.add(user);
@@ -97,7 +96,6 @@ public class UserDaoH2Impl implements UserDAO {
                 char[] password = (char[]) a.getArray();
                 user.setPassword(password);
                 user.setEmail(rs.getString("email"));
-                user.setGroupId(rs.getInt("group_id"));
                 user.setAdmin(rs.getBoolean("is_admin"));
 
                 return user;
@@ -127,7 +125,6 @@ public class UserDaoH2Impl implements UserDAO {
             stmt.setString(3, user.getEmail());
             stmt.setObject(4, user.getPassword());
             stmt.setBoolean(5, user.isAdmin());
-            stmt.setInt(6,user.getGroupId());
 
             int result = stmt.executeUpdate();
             rs = stmt.getGeneratedKeys();
@@ -160,7 +157,6 @@ public class UserDaoH2Impl implements UserDAO {
             stmt.setString(3, user.getEmail());
             stmt.setObject(4, user.getPassword());
             stmt.setBoolean(5, user.isAdmin());
-            stmt.setInt(6,user.getGroupId());
 
             int result = stmt.executeUpdate();
             rs = stmt.getGeneratedKeys();
