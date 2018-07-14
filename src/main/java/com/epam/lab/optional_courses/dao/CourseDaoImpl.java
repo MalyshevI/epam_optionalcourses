@@ -198,8 +198,10 @@ public class CourseDaoImpl implements CourseDao {
             statement = connection.prepareStatement(GET_BY_USER);
 
             userDao = new UserDaoImpl();
+            statement.setInt(1,user.getId());
 
             resultSet = statement.executeQuery();
+
 
             while (resultSet.next()) {
 

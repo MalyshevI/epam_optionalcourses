@@ -70,4 +70,14 @@ public class Feedback {
     public void setFeedbackBody(String feedbackBody) {
         this.feedbackBody = feedbackBody;
     }
+
+    @Override
+    public String toString() {
+        return "Feedback{" +
+                "user=" + user +
+                ", course=" + course +
+                ", grade=" + grade +
+                ", feedbackBody='" + feedbackBody + '\'' +
+                '}';
+    }
 }
