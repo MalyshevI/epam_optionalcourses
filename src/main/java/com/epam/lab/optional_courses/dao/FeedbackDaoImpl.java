@@ -269,8 +269,10 @@ public class FeedbackDaoImpl implements FeedbackDao {
         try {
             connection = connectionPool.getConnection();
             statement = connection.prepareStatement(UPDATE);
-            statement.setInt(1, feedback.getUser().getId());
-            statement.setInt(2, feedback.getCourse().getId());
+            statement.setString(1, feedback.getFeedbackBody());
+            statement.setInt(2, feedback.getGrade());
+            statement.setInt(3, feedback.getUser().getId());
+            statement.setInt(4, feedback.getCourse().getId());
 
             rowNumber = statement.executeUpdate();
         } catch (SQLException e) {
