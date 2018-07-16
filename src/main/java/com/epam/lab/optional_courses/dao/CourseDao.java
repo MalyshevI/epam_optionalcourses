@@ -21,23 +21,29 @@ public interface  CourseDao {
 
     /**
      * Return list of all exist Course objects
+     * @param limit - given limit
+     * @param offset - given offset
      * @return list of Course objects
      */
-    List<Course> getAllCourses();
+    List<Course> getAllCourses(long limit, long offset);
 
     /**
      * Returns the list of courses that the specified user is leading
      * @param tutor - given object User
+     * @param limit - given limit
+     * @param offset - given offset
      * @return list of Course objects
      */
-    List<Course> getCoursesByTutor(User tutor);
+    List<Course> getCoursesByTutor(User tutor, long limit, long offset);
 
     /**
      * Returns the list of courses that the specified user is leading
      * @param user - given object User
+     * @param limit - given limit
+     * @param offset - given offset
      * @return list of Course objects
      */
-    List<Course> getCoursesByUser(User user);
+    List<Course> getCoursesByUser(User user, long limit, long offset);
 
     /**
      * Add given Course object to DataBase
@@ -60,5 +66,17 @@ public interface  CourseDao {
      */
     boolean updateCourse(Course course);
 
+    /**
+     * Enroll user on course
+     * @param course - given course that user choose
+     * @param user - given user
+     * @return true if user enroll to the course
+     */
     boolean enrollUserOnCourse(Course course, User user);
+
+    /**
+     * Return count of Courses in database
+     * @return number of courses
+     */
+    long countCourses();
 }

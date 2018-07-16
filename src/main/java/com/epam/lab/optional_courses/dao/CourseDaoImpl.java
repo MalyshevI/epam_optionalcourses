@@ -34,6 +34,7 @@ public class CourseDaoImpl implements CourseDao {
     private static final String DELETE;
     private static final String UPDATE;
     private static final String ENROLL_USER;
+    private static final String COUNT_COURSES;
 
     private UserDao userDao;
 
@@ -53,6 +54,7 @@ public class CourseDaoImpl implements CourseDao {
         DELETE = properties.getProperty("DELETE_COURSE");
         UPDATE = properties.getProperty("UPDATE_COURSE");
         ENROLL_USER = properties.getProperty("ENROLL_USER_ON_COURSE");
+        COUNT_COURSES = properties.getProperty("COUNT_COURSES");
     }
 
     /**
@@ -73,6 +75,7 @@ public class CourseDaoImpl implements CourseDao {
             userDao = new UserDaoImpl();
             statement = connection.prepareStatement(GET_BY_ID);
             statement.setInt(1, id);
+
 
             resultSet = statement.executeQuery();
 
@@ -101,10 +104,12 @@ public class CourseDaoImpl implements CourseDao {
     /**
      * Return list of all exist Course objects
      *
+     * @param limit  - given limit
+     * @param offset - given offset
      * @return list of Course objects
      */
     @Override
-    public List<Course> getAllCourses() {
+    public List<Course> getAllCourses(long limit, long offset) {
 
         Connection connection = null;
         PreparedStatement statement = null;
@@ -113,8 +118,10 @@ public class CourseDaoImpl implements CourseDao {
 
         try {
             connection = connectionPool.getConnection();
-            statement = connection.prepareStatement(GET_ALL);
             userDao = new UserDaoImpl();
+            statement = connection.prepareStatement(GET_ALL);
+            statement.setLong(1, limit);
+            statement.setLong(2, offset);
 
             resultSet = statement.executeQuery();
 
@@ -142,22 +149,25 @@ public class CourseDaoImpl implements CourseDao {
     /**
      * Returns the list of courses that the specified user is leading
      *
-     * @param tutor - given object User
+     * @param limit  - given limit
+     * @param offset - given offset
+     * @param tutor  - given object User
      * @return list of Course objects
      */
     @Override
-    public List<Course> getCoursesByTutor(User tutor) {
+    public List<Course> getCoursesByTutor(User tutor, long limit, long offset) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         List<Course> resultList = new ArrayList<>();
 
         try {
-
             connection = connectionPool.getConnection();
+            userDao = new UserDaoImpl();
             statement = connection.prepareStatement(GET_BY_TUTOR);
             statement.setInt(1, tutor.getId());
-            userDao = new UserDaoImpl();
+            statement.setLong(2, limit);
+            statement.setLong(3, offset);
 
             resultSet = statement.executeQuery();
 
@@ -185,11 +195,13 @@ public class CourseDaoImpl implements CourseDao {
     /**
      * Returns the list of courses that the specified user is leading
      *
-     * @param user - given object User
+     * @param limit  - given limit
+     * @param offset - given offset
+     * @param user   - given object User
      * @return list of Course objects
      */
     @Override
-    public List<Course> getCoursesByUser(User user) {
+    public List<Course> getCoursesByUser(User user, long limit, long offset) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -200,8 +212,9 @@ public class CourseDaoImpl implements CourseDao {
             statement = connection.prepareStatement(GET_BY_USER);
 
             userDao = new UserDaoImpl();
-            statement.setInt(1,user.getId());
-
+            statement.setInt(1, user.getId());
+            statement.setLong(2, limit);
+            statement.setLong(3, offset);
             resultSet = statement.executeQuery();
 
 
@@ -212,7 +225,7 @@ public class CourseDaoImpl implements CourseDao {
                 resultCourse.setCourseName(resultSet.getString("course_name"));
                 resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
                 resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
-                resultCourse.setTutor(userDao.getUserById(resultSet.getInt("tutor_id")));  //wa
+                resultCourse.setTutor(userDao.getUserById(resultSet.getInt("tutor_id")));
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
 
                 resultList.add(resultCourse);
@@ -251,7 +264,7 @@ public class CourseDaoImpl implements CourseDao {
 
             rowNumber = statement.executeUpdate();
             resultSet = statement.getGeneratedKeys();
-            if(resultSet.next()){
+            if (resultSet.next()) {
                 course.setId(resultSet.getInt(1));
             }
         } catch (SQLException e) {
@@ -328,6 +341,13 @@ public class CourseDaoImpl implements CourseDao {
         return rowNumber > 0;
     }
 
+    /**
+     * Enroll user on course
+     *
+     * @param course - given course that user choose
+     * @param user   - given user
+     * @return true if user enroll to the course
+     */
     @Override
     public boolean enrollUserOnCourse(Course course, User user) {
         Connection connection = null;
@@ -350,6 +370,38 @@ public class CourseDaoImpl implements CourseDao {
             closeResources(statement, null, connection);
         }
         return rowNumber > 0;
+    }
+
+    /**
+     * Return count of Courses in database
+     *
+     * @return number of courses
+     */
+    @Override
+    public long countCourses() {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        long count = 0;
+        try {
+
+            connection = connectionPool.getConnection();
+            userDao = new UserDaoImpl();
+            statement = connection.prepareStatement(COUNT_COURSES);
+
+            resultSet = statement.executeQuery();
+
+
+            if (resultSet.next()) {
+                count = resultSet.getLong(1);
+            }
+            return count;
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+        } finally {
+            closeResources(statement, resultSet, connection);
+        }
+        return count;
     }
 
     private void closeResources(PreparedStatement statement, ResultSet resultSet, Connection connection) {
