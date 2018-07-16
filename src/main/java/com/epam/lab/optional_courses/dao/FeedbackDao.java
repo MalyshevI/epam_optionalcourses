@@ -29,7 +29,7 @@ public interface FeedbackDao {
      * @param user - given User object
      * @return list of Feedback objects
      */
-    List<Feedback> getFeedbacksByUser(User user);
+    List<Feedback> getFeedbackByUser(User user, long limit, long offset);
 
     /**
      * Return list of Feedback  objects from DataBase corresponding to given Course
@@ -37,14 +37,14 @@ public interface FeedbackDao {
      * @param course - given Course object
      * @return list of Feedback objects
      */
-    List<Feedback> getFeedbacksByCourse(Course course);
+    List<Feedback> getFeedbackByCourse(Course course, long limit, long offset);
 
     /**
      * Return list of all exist Feedback objects
      *
      * @return list of Feedback objects
      */
-    List<Feedback> getAllFeedbacks();
+    List<Feedback> getAllFeedback(long limit, long offset);
 
     /**
      * Add given Feedback object to DataBase
@@ -68,4 +68,6 @@ public interface FeedbackDao {
      * @return - previous Feedback object from DB
      */
     boolean updateFeedback (Feedback feedback);
+
+    long countFeedback();
 }

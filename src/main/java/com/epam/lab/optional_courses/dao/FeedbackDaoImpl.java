@@ -32,6 +32,7 @@ public class FeedbackDaoImpl implements FeedbackDao {
     private static final String ADD;
     private static final String DELETE;
     private static final String UPDATE;
+    private static final String COUNT;
 
     private UserDao userDao;
     private CourseDao courseDao;
@@ -41,17 +42,18 @@ public class FeedbackDaoImpl implements FeedbackDao {
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream("src/main/resources/sql_request_body_Mysql.properties"));
-            log.log(Level.INFO, "SQL request bodies for feedbacks loaded successfully");
+            log.log(Level.INFO, "SQL request bodies for feedback loaded successfully");
         } catch (IOException e) {
-            log.log(Level.ERROR, "Can't load SQL request bodies for feedbacks", e);
+            log.log(Level.ERROR, "Can't load SQL request bodies for feedback", e);
         }
         GET_BY_USER_AND_COURSE = properties.getProperty("GET_FEEDBACK_BY_USER_AND_COURSE");
         GET_BY_USER = properties.getProperty("GET_FEEDBACK_BY_USER");
         GET_BY_COURSE = properties.getProperty("GET_FEEDBACK_BY_COURSE");
-        GET_ALL = properties.getProperty("GET_ALL_FEEDBACKS");
+        GET_ALL = properties.getProperty("GET_ALL_FEEDBACK");
         ADD = properties.getProperty("ADD_FEEDBACK");
         DELETE = properties.getProperty("DELETE_FEEDBACK");
         UPDATE = properties.getProperty("UPDATE_FEEDBACK");
+        COUNT = properties.getProperty("COUNT_FEEDBACK");
     }
 
     /**
@@ -92,14 +94,17 @@ public class FeedbackDaoImpl implements FeedbackDao {
         return null;
     }
 
+
     /**
-     * Return list of Feedback  objects from DataBase corresponding to given User
+     * Return limited list of Feedback  objects from DataBase corresponding to given User
      *
-     * @param user - given User object
-     * @return list of Feedback objects
+     * @param user  - given User object
+     * @param limit - given limit
+     * @param offset - given offset
+     * @return  list of Feedback objects
      */
     @Override
-    public List<Feedback> getFeedbacksByUser(User user) {
+    public List<Feedback> getFeedbackByUser(User user, long limit, long offset) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -108,6 +113,8 @@ public class FeedbackDaoImpl implements FeedbackDao {
             connection = connectionPool.getConnection();
             statement = connection.prepareStatement(GET_BY_USER);
             statement.setInt(1, user.getId());
+            statement.setLong(2, limit);
+            statement.setLong(3, offset);
             courseDao = new CourseDaoImpl();
 
             resultSet = statement.executeQuery();
@@ -132,10 +139,12 @@ public class FeedbackDaoImpl implements FeedbackDao {
      * Return list of Feedback  objects from DataBase corresponding to given Course
      *
      * @param course - given Course object
-     * @return list of Feedback objects
+     * @param limit - given limit
+     * @param offset - given offset
+     * @return @return list of Feedback objects
      */
     @Override
-    public List<Feedback> getFeedbacksByCourse(Course course) {
+    public List<Feedback> getFeedbackByCourse(Course course, long limit, long offset) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -144,6 +153,8 @@ public class FeedbackDaoImpl implements FeedbackDao {
             connection = connectionPool.getConnection();
             statement = connection.prepareStatement(GET_BY_COURSE);
             statement.setInt(1, course.getId());
+            statement.setLong(2, limit);
+            statement.setLong(3, offset);
             userDao = new UserDaoImpl();
 
             resultSet = statement.executeQuery();
@@ -167,10 +178,12 @@ public class FeedbackDaoImpl implements FeedbackDao {
     /**
      * Return list of all exist Feedback objects
      *
+     * @param limit - given limit
+     * @param offset - given offset
      * @return list of Feedback objects
      */
     @Override
-    public List<Feedback> getAllFeedbacks() {
+    public List<Feedback> getAllFeedback(long limit, long offset) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -178,6 +191,8 @@ public class FeedbackDaoImpl implements FeedbackDao {
         try {
             connection = connectionPool.getConnection();
             statement = connection.prepareStatement(GET_ALL);
+            statement.setLong(1, limit);
+            statement.setLong(2, offset);
             courseDao = new CourseDaoImpl();
             userDao = new UserDaoImpl();
 
@@ -281,6 +296,33 @@ public class FeedbackDaoImpl implements FeedbackDao {
             closeResources(statement, null, connection);
         }
         return rowNumber > 0;
+    }
+
+    /**
+     * Count all records in "feedback"
+     *
+     * @return long count of all records in "feedback"
+     */
+    @Override
+    public long countFeedback() {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        long count = 0;
+        try {
+            connection = connectionPool.getConnection();
+            statement = connection.prepareStatement(COUNT);
+
+            resultSet = statement.executeQuery();
+            if(resultSet.next()) {
+                count = resultSet.getLong(1);
+            }
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+        } finally {
+            closeResources(statement, resultSet, connection);
+        }
+        return count;
     }
 
     private void closeResources(PreparedStatement statement, ResultSet resultSet, Connection connection) {
