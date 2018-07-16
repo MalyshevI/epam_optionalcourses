@@ -69,5 +69,10 @@ public interface FeedbackDao {
      */
     boolean updateFeedback (Feedback feedback);
 
+    /**
+     * Count all records in "feedback"
+     *
+     * @return long count of all records in "feedback"
+     */
     long countFeedback();
 }

@@ -35,6 +35,7 @@ public class CourseDaoImpl implements CourseDao {
     private static final String UPDATE;
     private static final String ENROLL_USER;
     private static final String COUNT_COURSES;
+    private static final String IS_USER_ON_COURSE;
 
     private UserDao userDao;
 
@@ -55,6 +56,7 @@ public class CourseDaoImpl implements CourseDao {
         UPDATE = properties.getProperty("UPDATE_COURSE");
         ENROLL_USER = properties.getProperty("ENROLL_USER_ON_COURSE");
         COUNT_COURSES = properties.getProperty("COUNT_COURSES");
+        IS_USER_ON_COURSE = properties.getProperty("IS_USER_ON_COURSE");
     }
 
     /**
@@ -402,6 +404,35 @@ public class CourseDaoImpl implements CourseDao {
             closeResources(statement, resultSet, connection);
         }
         return count;
+    }
+
+    /**
+     * return true if user enrolled on course
+     *
+     * @param user   - given user
+     * @param course - given course
+     * @return return true if user enrolled on course
+     */
+    @Override
+    public boolean isUserOnCourse(User user, Course course) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = connectionPool.getConnection();
+            statement = connection.prepareStatement(IS_USER_ON_COURSE);
+
+            resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+        } finally {
+            closeResources(statement, resultSet, connection);
+        }
+        return false;
     }
 
     private void closeResources(PreparedStatement statement, ResultSet resultSet, Connection connection) {

@@ -79,4 +79,12 @@ public interface  CourseDao {
      * @return number of courses
      */
     long countCourses();
+
+    /**
+     * return true if user enrolled on course
+     * @param user - given user
+     * @param course - given course
+     * @return return true if user enrolled on course
+     */
+    boolean isUserOnCourse(User user, Course course);
 }
