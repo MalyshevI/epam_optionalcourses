@@ -21,11 +21,12 @@ public class UserDaoImpl implements UserDao {
 
     private static final String FIND_ALL;
     private static final String FIND_BY_ID;
-    private static final String FIND_BY_NAME;
-    private static final String FIND_BY_EMAIL_AND_PASSWORD;
+//    private static final String FIND_BY_NAME;
+//    private static final String FIND_BY_EMAIL_AND_PASSWORD;
     private static final String INSERT;
     private static final String UPDATE;
     private static final String DELETE;
+    private static final String COUNT;
 
     static {
         Properties properties = new Properties();
@@ -37,22 +38,25 @@ public class UserDaoImpl implements UserDao {
         }
         FIND_ALL = properties.getProperty("FIND_ALL_USERS");
         FIND_BY_ID = properties.getProperty("GET_USER_BY_ID");
-        FIND_BY_NAME = properties.getProperty("GET_USER_BY_NAME");
-        FIND_BY_EMAIL_AND_PASSWORD = properties.getProperty("GET_USER_BY_EMAIL_AND_PASSWORD");
+//        FIND_BY_NAME = properties.getProperty("GET_USER_BY_NAME");
+//        FIND_BY_EMAIL_AND_PASSWORD = properties.getProperty("GET_USER_BY_EMAIL_AND_PASSWORD");
         INSERT = properties.getProperty("ADD_USER");
         UPDATE = properties.getProperty("UPDATE_USER");
         DELETE = properties.getProperty("DELETE_USER");
+        COUNT = properties.getProperty("COUNT_USERS");
     }
 
 
     @Override
-    public List<User> getAllUsers() {
+    public List<User> getAllUsers(long offset, long limit) {
         Connection conn = connectionPool.getConnection();
         PreparedStatement stmt = null;
         ResultSet rs = null;
         List<User> list = new ArrayList<>();
         try {
             stmt = conn.prepareStatement(FIND_ALL);
+            stmt.setLong(1, offset);
+            stmt.setLong(2, limit);
             rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -73,6 +77,27 @@ public class UserDaoImpl implements UserDao {
             closeResources(stmt, rs, conn);
         }
         return list;
+    }
+
+
+        @Override
+    public long countAllUsers() {
+        Connection conn = connectionPool.getConnection();
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        long result = 0;
+        try {
+            stmt = conn.prepareStatement(COUNT);
+            rs = stmt.executeQuery();
+            while (rs.next()){
+                result = rs.getLong(1);
+            }
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+        } finally {
+            closeResources(stmt, rs, conn);
+        }
+        return result;
     }
 
     @Override

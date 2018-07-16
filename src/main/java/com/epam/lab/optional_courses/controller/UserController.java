@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class CourseController extends HttpServlet {
+public class UserController extends HttpServlet {
     private static final Logger log = LogManager.getLogger(MainController.class);
 
     @Override

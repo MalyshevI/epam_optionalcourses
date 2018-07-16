@@ -1,6 +1,5 @@
 package com.epam.lab.optional_courses.controller;
 
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class CourseController extends HttpServlet {
+public class MainController extends HttpServlet {
     private static final Logger log = LogManager.getLogger(MainController.class);
 
     @Override
