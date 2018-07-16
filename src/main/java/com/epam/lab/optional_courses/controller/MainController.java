@@ -14,13 +14,13 @@ public class MainController extends HttpServlet {
     private static final Logger log = LogManager.getLogger(MainController.class);
 
     @Override
-    protected void doGet(HttpServletRequest reqest, HttpServletResponse response)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.getWriter().println("Hello World!");
     }
 
     @Override
-    protected void doPost(HttpServletRequest reqest, HttpServletResponse response)
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.getWriter().println("Hello World!");
     }
