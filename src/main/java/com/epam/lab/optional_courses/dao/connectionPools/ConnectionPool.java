@@ -33,9 +33,14 @@ public class ConnectionPool {
      */
     public static synchronized ConnectionPool getInstance() {
         if (instance == null) {
+            try {
+                Class.forName("com.mysql.jdbc.Driver");
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
             Properties properties = new Properties();
             try {
-                properties.load(new FileInputStream("src/main/resources/database.properties"));
+                properties.load(ConnectionPool.class.getClassLoader().getResourceAsStream("database.properties"));
                 log.log(Level.INFO,"DB connected successfully");
             } catch (IOException e) {
                 log.log(Level.ERROR,"Can't open the DB configuration", e);
