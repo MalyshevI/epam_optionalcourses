@@ -5,6 +5,7 @@ import com.epam.lab.optional_courses.entity.Course;
 import com.epam.lab.optional_courses.entity.Feedback;
 import com.epam.lab.optional_courses.entity.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CourseService {
@@ -12,33 +13,49 @@ public class CourseService {
     private static UserDao userDao = new UserDaoImpl();
     private static FeedbackDao feedbackDao = new FeedbackDaoImpl();
 
-    public static List<Course> getAllCourses(long limit, long offset){
+    public static List<Course> getAllCourses(long limit, long offset) {
         return courseDao.getAllCourses(limit, offset);
     }
 
-    public static Course getCourseById(String input){
+    public static Course getCourseById(String input) {
         try {
             int id = Integer.parseInt(input);
             return courseDao.getCourseById(id);
-        }catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             return null;
         }
     }
 
-    public static User getUserById(String input){
+    public static User getUserById(String input) {
         try {
             int id = Integer.parseInt(input);
             return userDao.getUserById(id);
-        }catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             return null;
         }
     }
 
-    public static Feedback getFeedbackByUserAndCourse(User user, Course course){
+    public static Feedback getFeedbackByUserAndCourse(User user, Course course) {
         return feedbackDao.getFeedbackByUserAndCourse(user, course);
     }
 
-    public static boolean isUserOnCourse(User user, Course course){
+    public static boolean isUserOnCourse(User user, Course course) {
         return courseDao.isUserOnCourse(user, course);
+    }
+
+    public static List<Boolean> getCoursesEnrolledByCurUser(User curUser, List<Course> allCourses) {
+        List<Boolean> resultList = new ArrayList<>();
+        for (Course curCourse: allCourses) {
+            if(courseDao.isUserOnCourse(curUser, curCourse)){
+                resultList.add(true);
+            }else{
+                resultList.add(false);
+            }
+        }
+        return resultList;
+    }
+
+    public static long countCourses(){
+        return  courseDao.countCourses();
     }
 }

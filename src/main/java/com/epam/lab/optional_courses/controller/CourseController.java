@@ -8,7 +8,9 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,9 +19,9 @@ import java.util.List;
 
 import static com.epam.lab.optional_courses.service.CourseService.*;
 
+@WebServlet(loadOnStartup = 1)
 public class CourseController extends HttpServlet {
     private static final Logger log = LogManager.getLogger(CourseController.class);
-    private static long limit = 20;
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -28,16 +30,46 @@ public class CourseController extends HttpServlet {
                 AUTH - > USER
         */
         User curUser = new User(); //current logined user
+        String offsetStr;
+        Long offset = 0L;
         if (pathInfo == null) {
-            List<Course> allCourses = getAllCourses(limit, 0);
-            // SENT TO JSP PREPROC - > (String) HTML
+            offsetStr = (String) request.getAttribute("offset");
+            if(offsetStr !=null){
+                try {
+                    offset = Long.parseLong(offsetStr);
+                }catch (NumberFormatException ignored){ }
+            }
+            List<Course> allCourses = getAllCourses(Common.limit, offset);
+            List<Boolean> coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(curUser, allCourses);
+            request.setAttribute("countEntity", countCourses());
+            request.setAttribute("entityType", Common.EntityType.COURSE);
+            request.setAttribute("list", allCourses);
+            request.setAttribute("curUser", curUser);
+            request.setAttribute("offset", offset);
+            request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher("src/main/webapp/list.jsp");
+            requestDispatcher.forward(request, response);
         } else {
             String[] splitedPath = pathInfo.toLowerCase().split("/");
             Course course;
             switch (splitedPath.length) {
                 case 0:
-                    List<Course> allCourses = getAllCourses(limit, 0);
-                    // SENT TO JSP PREPROC - > (String) HTML
+                    offsetStr = (String) request.getAttribute("offset");
+                    if(offsetStr !=null){
+                        try {
+                            offset = Long.parseLong(offsetStr);
+                        }catch (NumberFormatException ignored){ }
+                    }
+                    List<Course> allCourses = getAllCourses(Common.limit, offset);
+                    List<Boolean> coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(curUser, allCourses);
+                    request.setAttribute("countEntity", countCourses());
+                    request.setAttribute("entityType", Common.EntityType.COURSE);
+                    request.setAttribute("list", allCourses);
+                    request.setAttribute("curUser", curUser);
+                    request.setAttribute("offset", offset);
+                    request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
+                    RequestDispatcher requestDispatcher = request.getRequestDispatcher("src/main/webapp/list.jsp");
+                    requestDispatcher.forward(request, response);
                     break;
                 case 2:
                     course = getCourseById(splitedPath[1]);
@@ -46,11 +78,12 @@ public class CourseController extends HttpServlet {
                             //show COURSE TO TUTOR
                         }else if(isUserOnCourse(curUser, course)){
                             //show course to user enrolled on course
+
                         }else {
                             // SHOW COURSE to not enrolled user
                         }
                     } else {
-                        // return 404
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     }
                     break;
                 case 4:
@@ -66,25 +99,25 @@ public class CourseController extends HttpServlet {
                                     } else if (curUser.equals(course.getTutor())) {
                                         // SHOW FEEDBACK TO TUTOR
                                     } else {
-                                        //return 404
+
                                     }
                                 } else {
-                                    //return 404
+                                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
                                 }
 
                             } else {
-                                // return 404
+                                response.sendError(HttpServletResponse.SC_NOT_FOUND);
                             }
                         }else{
-                            //return 404
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
                         }
                     }else {
-                        //return 404
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     }
 
                     break;
                 default:
-                    //return 404
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     break;
             }
         }
@@ -95,7 +128,7 @@ public class CourseController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-       
+
     }
 
     @Override
