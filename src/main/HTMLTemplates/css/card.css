@@ -1,0 +1,17 @@
+div.topWrapper {
+    margin:0 5% 0 5%;
+    width:90%;
+}
+div.card {
+float:left;
+width:30%;
+}
+div.information {
+float:right;
+width:60%;
+}
+
+ul.pagination{
+    margin:0 45% 0 45%;
+    width:90%;
+}
