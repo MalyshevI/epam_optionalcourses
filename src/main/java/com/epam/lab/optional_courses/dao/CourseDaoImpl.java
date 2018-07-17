@@ -37,12 +37,11 @@ public class CourseDaoImpl implements CourseDao {
     private static final String COUNT_COURSES;
     private static final String IS_USER_ON_COURSE;
 
-    private UserDao userDao;
 
     static {
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream("src/main/resources/sql_request_body_Mysql.properties"));
+            properties.load(CourseDaoImpl.class.getClassLoader().getResourceAsStream(("sql_request_body_Mysql.properties")));
             log.log(Level.INFO, "SQL request bodies for courses loaded successfully ");
         } catch (IOException e) {
             log.log(Level.ERROR, "Can't load SQL request bodies for courses", e);
@@ -74,7 +73,6 @@ public class CourseDaoImpl implements CourseDao {
         try {
 
             connection = connectionPool.getConnection();
-            userDao = new UserDaoImpl();
             statement = connection.prepareStatement(GET_BY_ID);
             statement.setInt(1, id);
 
@@ -89,7 +87,7 @@ public class CourseDaoImpl implements CourseDao {
                 resultCourse.setCourseName(resultSet.getString("course_name"));
                 resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
                 resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
-                resultCourse.setTutor(userDao.getUserById(resultSet.getInt("tutor_id")));
+                resultCourse.setTutor(CommonDao.userDao.getUserById(resultSet.getInt("tutor_id")));
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
             } else {
                 resultCourse = null;
@@ -120,7 +118,6 @@ public class CourseDaoImpl implements CourseDao {
 
         try {
             connection = connectionPool.getConnection();
-            userDao = new UserDaoImpl();
             statement = connection.prepareStatement(GET_ALL);
             statement.setLong(1, limit);
             statement.setLong(2, offset);
@@ -134,7 +131,7 @@ public class CourseDaoImpl implements CourseDao {
                 resultCourse.setCourseName(resultSet.getString("course_name"));
                 resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
                 resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
-                resultCourse.setTutor(userDao.getUserById(resultSet.getInt("tutor_id")));
+                resultCourse.setTutor(CommonDao.userDao.getUserById(resultSet.getInt("tutor_id")));
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
 
                 resultList.add(resultCourse);
@@ -165,7 +162,6 @@ public class CourseDaoImpl implements CourseDao {
 
         try {
             connection = connectionPool.getConnection();
-            userDao = new UserDaoImpl();
             statement = connection.prepareStatement(GET_BY_TUTOR);
             statement.setInt(1, tutor.getId());
             statement.setLong(2, limit);
@@ -213,7 +209,6 @@ public class CourseDaoImpl implements CourseDao {
             connection = connectionPool.getConnection();
             statement = connection.prepareStatement(GET_BY_USER);
 
-            userDao = new UserDaoImpl();
             statement.setInt(1, user.getId());
             statement.setLong(2, limit);
             statement.setLong(3, offset);
@@ -227,7 +222,7 @@ public class CourseDaoImpl implements CourseDao {
                 resultCourse.setCourseName(resultSet.getString("course_name"));
                 resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
                 resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
-                resultCourse.setTutor(userDao.getUserById(resultSet.getInt("tutor_id")));
+                resultCourse.setTutor(CommonDao.userDao.getUserById(resultSet.getInt("tutor_id")));
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
 
                 resultList.add(resultCourse);
@@ -388,7 +383,6 @@ public class CourseDaoImpl implements CourseDao {
         try {
 
             connection = connectionPool.getConnection();
-            userDao = new UserDaoImpl();
             statement = connection.prepareStatement(COUNT_COURSES);
 
             resultSet = statement.executeQuery();
@@ -421,6 +415,8 @@ public class CourseDaoImpl implements CourseDao {
         try {
             connection = connectionPool.getConnection();
             statement = connection.prepareStatement(IS_USER_ON_COURSE);
+            statement.setInt(1, user.getId());
+            statement.setInt(2, course.getId());
 
             resultSet = statement.executeQuery();
 

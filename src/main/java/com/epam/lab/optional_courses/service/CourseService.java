@@ -9,18 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CourseService {
-    private static CourseDao courseDao = new CourseDaoImpl();
-    private static UserDao userDao = new UserDaoImpl();
-    private static FeedbackDao feedbackDao = new FeedbackDaoImpl();
 
     public static List<Course> getAllCourses(long limit, long offset) {
-        return courseDao.getAllCourses(limit, offset);
+        return CommonDao.courseDao.getAllCourses(limit, offset);
     }
 
     public static Course getCourseById(String input) {
         try {
             int id = Integer.parseInt(input);
-            return courseDao.getCourseById(id);
+            return CommonDao.courseDao.getCourseById(id);
         } catch (NumberFormatException e) {
             return null;
         }
@@ -29,24 +26,24 @@ public class CourseService {
     public static User getUserById(String input) {
         try {
             int id = Integer.parseInt(input);
-            return userDao.getUserById(id);
+            return CommonDao.userDao.getUserById(id);
         } catch (NumberFormatException e) {
             return null;
         }
     }
 
     public static Feedback getFeedbackByUserAndCourse(User user, Course course) {
-        return feedbackDao.getFeedbackByUserAndCourse(user, course);
+        return CommonDao.feedbackDao.getFeedbackByUserAndCourse(user, course);
     }
 
     public static boolean isUserOnCourse(User user, Course course) {
-        return courseDao.isUserOnCourse(user, course);
+        return CommonDao.courseDao.isUserOnCourse(user, course);
     }
 
     public static List<Boolean> getCoursesEnrolledByCurUser(User curUser, List<Course> allCourses) {
         List<Boolean> resultList = new ArrayList<>();
         for (Course curCourse: allCourses) {
-            if(courseDao.isUserOnCourse(curUser, curCourse)){
+            if(CommonDao.courseDao.isUserOnCourse(curUser, curCourse)){
                 resultList.add(true);
             }else{
                 resultList.add(false);
@@ -56,6 +53,6 @@ public class CourseService {
     }
 
     public static long countCourses(){
-        return  courseDao.countCourses();
+        return  CommonDao.courseDao.countCourses();
     }
 }

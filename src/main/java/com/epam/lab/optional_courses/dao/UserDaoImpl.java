@@ -31,7 +31,7 @@ public class UserDaoImpl implements UserDao {
     static {
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream("src/main/resources/sql_request_body_Mysql.properties"));
+            properties.load(UserDaoImpl.class.getClassLoader().getResourceAsStream(("sql_request_body_Mysql.properties")));
             log.log(Level.INFO, "SQL request bodies for users loaded successfully");
         } catch (IOException e) {
             log.log(Level.ERROR, "Can't load SQL request bodies for users", e);
