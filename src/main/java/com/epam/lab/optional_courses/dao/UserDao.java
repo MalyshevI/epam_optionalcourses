@@ -15,7 +15,9 @@ public interface UserDao {
 
     User getUserById(int id);
 
-    //User getByEmailAndPassword(String email, String password);
+    boolean checkForEmailAndPassword(String email, String password);
+
+    User getByEmailAndPassword(String email, String password);
 
     boolean addUser(User user);
 

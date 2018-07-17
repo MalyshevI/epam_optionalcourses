@@ -91,8 +91,8 @@ public class User {
         if (obj == null || getClass() != obj.getClass()) return false;
         User that = (User) obj;
         return id == that.id &&
-                email == that.email &&
-                password == that.password;
+                email.equals( that.email) &&
+                password.equals(that.password);
     }
 
     @Override
