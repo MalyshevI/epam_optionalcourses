@@ -8,6 +8,11 @@
 <%@ page import="java.time.LocalDateTime" %>
 <%@ page import="java.time.LocalTime" %>
 <%@ page import="com.epam.lab.optional_courses.entity.User" %>
+<%@ page import="java.net.URLClassLoader" %>
+<%@ page import="java.net.URL" %>
+<%@ page import="java.io.File" %>
+<!--@ taglib uri="http://java.sun.com/jstl/fmt" prefix="fmt" fmt:setBundle basename="i18n.WelcomeBundle" /> -->
+
 <html>
 <head>
     <title>Page Title</title>
@@ -72,9 +77,12 @@
         <tr>
             <%
                 Locale locale = Locale.US;
-                ResourceBundle bundle = ResourceBundle.getBundle("src/main/resources/Resource Bundle 'i18n'", locale);
+
+
+                ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
                 Common.EntityType entityType = (Common.EntityType) request.getAttribute("entityType");
-                Long offset = Long.parseLong((String) request.getAttribute("offset"));
+                Long offset = (Long) request.getAttribute("offset");
+                System.out.println(offset);
                 User curUser = (User) request.getAttribute("curUser");
                 long countEntity = (long) request.getAttribute("countEntity");
                 long countPages = countEntity / Common.limit + 1;
@@ -148,13 +156,13 @@
         <ul class="pagination">
             <%
                 if (curPageNumber > 1) {
-                    out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"? offset = " + (offset - Common.limit) + "\">Previous</a></li>");
+                    out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"/course?offset=" + (offset - Common.limit) + "\">"+ bundle.getString("list.previous")+ "</a></li>");
                 }
             %>
-            <li class="page-item"><a class="page-link" href="#"><% out.print(curPageNumber + bundle.getString("common.of") + countPages); %></a></li>
+            <li class="page-item"><a class="page-link" href="#"><% out.print(curPageNumber + bundle.getString(" common.of ") + countPages); %></a></li>
             <%
                 if (curPageNumber < countPages) {
-                    out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"? offset = " + (offset + Common.limit) + "\">Previous</a></li>");
+                    out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"/course?offset=" + (offset + Common.limit) + "\">"+ bundle.getString("list.next")+ "</a></li>");
                 }
             %>
         </ul>

@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 import static com.epam.lab.optional_courses.service.CourseService.*;
@@ -22,43 +24,54 @@ import static com.epam.lab.optional_courses.service.CourseService.*;
 @WebServlet(loadOnStartup = 1)
 public class CourseController extends HttpServlet {
     private static final Logger log = LogManager.getLogger(CourseController.class);
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         String pathInfo = request.getPathInfo();
         /*
                 AUTH - > USER
         */
-        User curUser = new User(); //current logined user
-        String offsetStr;
+
+        //System.out.println("CONTROLLER STARTED" + new Date() );
+        User curUser = getUserById("41"); //current logined user
         Long offset = 0L;
+        String offsetStr;
         if (pathInfo == null) {
-            offsetStr = (String) request.getAttribute("offset");
-            if(offsetStr !=null){
+            offsetStr = request.getParameter("offset");
+            if (offsetStr != null) {
                 try {
                     offset = Long.parseLong(offsetStr);
-                }catch (NumberFormatException ignored){ }
+                } catch (NumberFormatException ignored) {
+                }
             }
+            //System.out.println("STARTED DAO" + new Date() );
             List<Course> allCourses = getAllCourses(Common.limit, offset);
+            //System.out.println("getAllCourses()" + new Date() );
             List<Boolean> coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(curUser, allCourses);
+            //System.out.println("getCoursesEnrolledByCurUser()" + new Date() );
             request.setAttribute("countEntity", countCourses());
             request.setAttribute("entityType", Common.EntityType.COURSE);
             request.setAttribute("list", allCourses);
             request.setAttribute("curUser", curUser);
             request.setAttribute("offset", offset);
             request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
-            RequestDispatcher requestDispatcher = request.getRequestDispatcher("src/main/webapp/list.jsp");
+
+            //System.out.println("DATA WENT TO JSP" + new Date() );
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher("list.jsp");
             requestDispatcher.forward(request, response);
         } else {
             String[] splitedPath = pathInfo.toLowerCase().split("/");
             Course course;
             switch (splitedPath.length) {
                 case 0:
-                    offsetStr = (String) request.getAttribute("offset");
-                    if(offsetStr !=null){
+                    offsetStr = request.getParameter("offset");
+                    if (offsetStr != null) {
                         try {
                             offset = Long.parseLong(offsetStr);
-                        }catch (NumberFormatException ignored){ }
+                        } catch (NumberFormatException ignored) {
+                        }
                     }
                     List<Course> allCourses = getAllCourses(Common.limit, offset);
                     List<Boolean> coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(curUser, allCourses);
@@ -68,18 +81,20 @@ public class CourseController extends HttpServlet {
                     request.setAttribute("curUser", curUser);
                     request.setAttribute("offset", offset);
                     request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
+
+                    System.out.println("DATA WENT TO JSP" + new Date());
                     RequestDispatcher requestDispatcher = request.getRequestDispatcher("src/main/webapp/list.jsp");
                     requestDispatcher.forward(request, response);
                     break;
                 case 2:
                     course = getCourseById(splitedPath[1]);
                     if (course != null) {
-                        if(curUser.equals(course.getTutor())){
+                        if (curUser.equals(course.getTutor())) {
                             //show COURSE TO TUTOR
-                        }else if(isUserOnCourse(curUser, course)){
+                        } else if (isUserOnCourse(curUser, course)) {
                             //show course to user enrolled on course
 
-                        }else {
+                        } else {
                             // SHOW COURSE to not enrolled user
                         }
                     } else {
@@ -108,10 +123,10 @@ public class CourseController extends HttpServlet {
                             } else {
                                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                             }
-                        }else{
+                        } else {
                             response.sendError(HttpServletResponse.SC_NOT_FOUND);
                         }
-                    }else {
+                    } else {
                         response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     }
 
