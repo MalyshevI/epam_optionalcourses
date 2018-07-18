@@ -36,6 +36,7 @@ public class SecurityService {
     }
 
     public static User getUserByCreds(String email, String password) {
+
         return userDao.getByEmailAndPassword(email, password);
     }
 }

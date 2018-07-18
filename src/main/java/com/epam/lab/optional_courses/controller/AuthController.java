@@ -1,5 +1,6 @@
 package com.epam.lab.optional_courses.controller;
 
+import com.epam.lab.optional_courses.entity.User;
 import com.epam.lab.optional_courses.service.SecurityService;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -47,10 +48,15 @@ public class AuthController extends HttpServlet {
         System.out.println(parameterNames);
         if (SecurityService.login(email, password)) {
             System.out.println("Login +");
-//            response.sendRedirect("/");
             HttpSession session = request.getSession();
-            session.setAttribute("user", SecurityService.getUserByCreds(email, password));
-            session.setAttribute("locale",locale);
+            String passwordHash = SecurityService.hash(password);
+            User user = new User(SecurityService.getUserByCreds(email, passwordHash));
+//            User user = SecurityService.getUserByCreds(email, passwordHash);                  //Maddening bug
+//            User user = new User(999, "first_name", "last_name", "email", "pass", false);
+//            System.out.println(SecurityService.getUserByCreds(email, passwordHash));
+            session.setAttribute("user", user);
+            session.setAttribute("locale", locale);
+//            response.sendRedirect("/WelcomeUser.jsp");  //Further redirect
         } else {
             System.out.println("Login -");
             request.setAttribute("ErrorMessage", bundle.getString("login.error"));
