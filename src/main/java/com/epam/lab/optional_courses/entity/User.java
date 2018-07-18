@@ -37,6 +37,13 @@ public class User {
         this.isAdmin = isAdmin;
     }
 
+    public User(String firstName, String lastName, String email, String password){
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+    }
+
     public int getId(){
         return id;
     }
@@ -91,8 +98,8 @@ public class User {
         if (obj == null || getClass() != obj.getClass()) return false;
         User that = (User) obj;
         return id == that.id &&
-                email == that.email &&
-                password == that.password;
+                email.equals( that.email) &&
+                password.equals(that.password);
     }
 
     @Override
