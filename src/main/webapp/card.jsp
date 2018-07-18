@@ -4,9 +4,8 @@
 <%@ page import="java.util.List" %>
 <%@ page import="com.epam.lab.optional_courses.service.components.EntryKV" %>
 
-
 <%
-    Locale locale = (Locale) request.getAttribute("Locale");
+    Locale locale = (Locale) request.getAttribute("locale");
     ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
     List<EntryKV> fields = (List<EntryKV>) request.getAttribute("entryList");
 %>
@@ -28,14 +27,20 @@
             </div>
         </div>
         <div class="information">
-            <c:forEach items="${fields}" var="field">
-                <dl class="row">
-                    <dt class="col-sm-3">${field.getName()}</dt>
-                    <dd class="col-sm-9">${field.getValue()}></dd>
-                </dl>
-                <br>
-            </c:forEach>
+
+            <%
+                for (EntryKV field:fields) {
+                    out.println("<dl class=\"row\">");
+                    out.println("<dt class=\"col-sm-3\">"+bundle.getString(field.getName())+"</dt>");
+                    out.println("<dt class=\"col-sm-9\">"+field.getValue()+"</dt>");
+                    out.println("</dl>");
+                }
+
+            %>
         </div>
+    </div>
+    <div class="table">
+
     </div>
 </div>
 

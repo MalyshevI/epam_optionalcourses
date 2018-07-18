@@ -15,12 +15,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.Timestamp;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import static com.epam.lab.optional_courses.service.CourseService.*;
+import static com.epam.lab.optional_courses.service.UserService.*;
 
 @WebServlet(loadOnStartup = 1)
 public class CourseController extends HttpServlet {
@@ -78,6 +79,7 @@ public class CourseController extends HttpServlet {
                     }
                     List<Course> allCourses = getAllCourses(Common.limit, offset);
                     List<Boolean> coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(curUser, allCourses);
+
                     request.setAttribute("countEntity", countCourses());
                     request.setAttribute("entityType", Common.EntityType.COURSE);
                     request.setAttribute("list", allCourses);

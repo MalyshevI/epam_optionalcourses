@@ -2,8 +2,8 @@
 <%@ page import="java.util.ResourceBundle" %>
 
 <%
-    Locale locale = (Locale) request.getSession(false).getAttribute("locale");
-    ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
+    //Locale locale = (Locale) request.getSession(false).getAttribute("locale");
+    ResourceBundle bundle = ResourceBundle.getBundle("i18n", Locale.US);
 
 %>
 <title><% out.print(request.getAttribute("title")); %></title>

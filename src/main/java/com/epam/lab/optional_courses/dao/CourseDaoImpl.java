@@ -36,12 +36,13 @@ public class CourseDaoImpl implements CourseDao {
     private static final String ENROLL_USER;
     private static final String COUNT_COURSES;
     private static final String IS_USER_ON_COURSE;
+    private static final String COUNT_COURSES_BY_USER;
 
 
     static {
         Properties properties = new Properties();
         try {
-            properties.load(CourseDaoImpl.class.getClassLoader().getResourceAsStream(("sql_request_body_Mysql.properties")));
+            properties.load(CourseDaoImpl.class.getClassLoader().getResourceAsStream("sql_request_body_Mysql.properties"));
             log.log(Level.INFO, "SQL request bodies for courses loaded successfully ");
         } catch (IOException e) {
             log.log(Level.ERROR, "Can't load SQL request bodies for courses", e);
@@ -56,6 +57,8 @@ public class CourseDaoImpl implements CourseDao {
         ENROLL_USER = properties.getProperty("ENROLL_USER_ON_COURSE");
         COUNT_COURSES = properties.getProperty("COUNT_COURSES");
         IS_USER_ON_COURSE = properties.getProperty("IS_USER_ON_COURSE");
+        COUNT_COURSES_BY_USER = properties.getProperty("COUNT_COURSES_BY_USER");
+
     }
 
     /**
@@ -385,6 +388,38 @@ public class CourseDaoImpl implements CourseDao {
             connection = connectionPool.getConnection();
             statement = connection.prepareStatement(COUNT_COURSES);
 
+            resultSet = statement.executeQuery();
+
+
+            if (resultSet.next()) {
+                count = resultSet.getLong(1);
+            }
+            return count;
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+        } finally {
+            closeResources(statement, resultSet, connection);
+        }
+        return count;
+    }
+
+    /**
+     * Return count of Courses applied by user
+     *
+     * @return number of users
+     */
+    @Override
+    public long countCoursesByUser(User user) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        long count = 0;
+        try {
+
+            connection = connectionPool.getConnection();
+            statement = connection.prepareStatement(COUNT_COURSES_BY_USER);
+
+            statement.setInt(1,user.getId());
             resultSet = statement.executeQuery();
 
 

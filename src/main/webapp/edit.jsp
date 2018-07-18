@@ -5,7 +5,7 @@
 <%@ page import="com.epam.lab.optional_courses.service.components.EntryKV" %>
 
 <%
-    Locale locale = (Locale) request.getAttribute("Locale");
+    Locale locale = (Locale) request.getAttribute("locale");
     ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
     List<EntryKV> fields = (List<EntryKV>) request.getAttribute("entryList");
 %>
@@ -28,13 +28,15 @@
         </div>
         <div class="information">
             <form action="" method="POST">
-                <c:forEach items="${fields}" var="field">
-                    <dl class="row">
-                        <dt class="col-sm-3">${field.getName()}</dt>
-                        <dd class="col-sm-9"><input class="form-control" placeholder="${field.getValue()}"></dd>
-                    </dl>
-                    <br>
-                </c:forEach>
+                <%
+                    for (EntryKV field:fields) {
+                        out.println("<dl class=\"row\">");
+                        out.println("<dt class=\"col-sm-3\">"+bundle.getString(field.getName())+"</dt>");
+                        out.println("<dt class=\"col-sm-9\"><input class=\"form-control\" name=\""+field.getName()+"\" placeholder=\""+field.getValue()+"\"</dt>");
+                        out.println("</dl>");
+                    }
+
+                %>
                 <button type="submit" class="btn btn-primary"><% bundle.getString("common.submit"); %></button>
             </form>
         </div>

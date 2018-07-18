@@ -23,14 +23,6 @@ public class CourseService {
         }
     }
 
-    public static User getUserById(String input) {
-        try {
-            int id = Integer.parseInt(input);
-            return CommonDao.userDao.getUserById(id);
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
 
     public static Feedback getFeedbackByUserAndCourse(User user, Course course) {
         return CommonDao.feedbackDao.getFeedbackByUserAndCourse(user, course);
