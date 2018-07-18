@@ -1,6 +1,7 @@
 <%@ page import="java.util.ResourceBundle" %>
 <%@ page import="java.util.Locale" %><%
-    Locale locale = (Locale) request.getAttribute("locale");
+    //Locale locale = (Locale) request.getAttribute("locale");
+    Locale locale = Locale.US;
     ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
 %>
 

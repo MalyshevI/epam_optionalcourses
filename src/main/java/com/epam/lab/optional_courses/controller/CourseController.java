@@ -4,6 +4,7 @@ package com.epam.lab.optional_courses.controller;
 import com.epam.lab.optional_courses.entity.Course;
 import com.epam.lab.optional_courses.entity.Feedback;
 import com.epam.lab.optional_courses.entity.User;
+import com.epam.lab.optional_courses.service.components.EntryKV;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,12 +17,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import static com.epam.lab.optional_courses.service.CourseService.*;
 import static com.epam.lab.optional_courses.service.FeedbackService.deleteFeedback;
+import static com.epam.lab.optional_courses.service.FeedbackService.getFeedbackForUsersOnCourse;
 
 @WebServlet(loadOnStartup = 1)
 public class CourseController extends HttpServlet {
@@ -31,25 +34,30 @@ public class CourseController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         //System.out.println("CONTROLLER STARTED" + new Date() );
-        User curUser = (User) request.getSession().getAttribute("user");
-        if(curUser==null){
-            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
-            requestDispatcher.forward(request, response);
-        }
-        Locale locale = (Locale)request.getSession().getAttribute("locale");
-        curUser = getUserById("41"); //current logined user
+//        User curUser = (User) request.getSession().getAttribute("user");
+//        if(curUser==null){
+//            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
+//            requestDispatcher.forward(request, response);
+//        }
+        //Locale locale = (Locale)request.getSession().getAttribute("locale");
+        User curUser = getUserById("41"); //current logined user
+        //request.setAttribute("locale", locale);
+        Locale locale = Locale.US;
         request.setAttribute("locale", locale);
+        request.setAttribute("curUser", curUser);
         String pathInfo = request.getPathInfo();
         long offset = 0L;
-        String offsetStr;
-        if (pathInfo == null) {
-            offsetStr = request.getParameter("offset");
-            if (offsetStr != null) {
-                try {
-                    offset = Long.parseLong(offsetStr);
-                } catch (NumberFormatException ignored) {
-                }
+        String offsetStr = request.getParameter("offset");
+        if (offsetStr != null) {
+            try {
+                offset = Long.parseLong(offsetStr);
+            } catch (NumberFormatException ignored) {
             }
+        }
+        request.setAttribute("offset", offset);
+        List<EntryKV> entries = new ArrayList<>();
+        RequestDispatcher requestDispatcher = null;
+        if (pathInfo == null) {
             //System.out.println("STARTED DAO" + new Date() );
             List<Course> allCourses = getAllCourses(Common.limit, offset);
             //System.out.println("getAllCourses()" + new Date() );
@@ -58,52 +66,65 @@ public class CourseController extends HttpServlet {
             request.setAttribute("countEntity", countCourses());
             request.setAttribute("entityType", Common.EntityType.COURSE);
             request.setAttribute("list", allCourses);
-            request.setAttribute("curUser", curUser);
-            request.setAttribute("offset", offset);
             request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
 
             //System.out.println("DATA WENT TO JSP" + new Date() );
-            RequestDispatcher requestDispatcher = request.getRequestDispatcher("list.jsp");
+            request.setAttribute("title", "title.table");
+            requestDispatcher = request.getRequestDispatcher("/table.jsp");
             requestDispatcher.forward(request, response);
         } else {
             String[] splitedPath = pathInfo.toLowerCase().split("/");
+            System.out.println(pathInfo);
+            System.out.println(splitedPath.length);
             Course course;
             switch (splitedPath.length) {
                 case 0:
-                    offsetStr = request.getParameter("offset");
-                    if (offsetStr != null) {
-                        try {
-                            offset = Long.parseLong(offsetStr);
-                        } catch (NumberFormatException ignored) {
-                        }
-                    }
+                    //System.out.println("STARTED DAO" + new Date() );
                     List<Course> allCourses = getAllCourses(Common.limit, offset);
+                    //System.out.println("getAllCourses()" + new Date() );
                     List<Boolean> coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(curUser, allCourses);
+                    //System.out.println("getCoursesEnrolledByCurUser()" + new Date() );
                     request.setAttribute("countEntity", countCourses());
                     request.setAttribute("entityType", Common.EntityType.COURSE);
                     request.setAttribute("list", allCourses);
-                    request.setAttribute("curUser", curUser);
-                    request.setAttribute("offset", offset);
                     request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
 
-                    //System.out.println("DATA WENT TO JSP" + new Date());
-                    RequestDispatcher requestDispatcher = request.getRequestDispatcher("list.jsp");
+                    //System.out.println("DATA WENT TO JSP" + new Date() );
+                    request.setAttribute("title", "title.table");
+                    requestDispatcher = request.getRequestDispatcher("/table.jsp");
                     requestDispatcher.forward(request, response);
                     break;
                 case 2:
                     if (splitedPath[1].equals("add")) {
-                        //RequestDispatcher requestDispatcher = request.getRequestDispatcher("src/main/webapp/list.jsp");
+                        entries.add(new EntryKV("common.courseName",""));
+                        entries.add(new EntryKV("course.startDate",""));
+                        entries.add(new EntryKV("course.finishDate",""));
+                        entries.add(new EntryKV("common.tutor",""));
+                        entries.add(new EntryKV("course.capacity",""));
+                        request.setAttribute("title", "title.addCourse");
+                        request.setAttribute("entryList", entries);
+                        requestDispatcher = request.getRequestDispatcher("/edit.jsp");
+                        requestDispatcher.forward(request, response);
                     }
                     course = getCourseById(splitedPath[1]);
                     if (course != null) {
-                        if (curUser.equals(course.getTutor())) {
-                            //show COURSE TO TUTOR
-                        } else if (isUserOnCourse(curUser, course)) {
-                            //show course to user enrolled on course
+                        request.setAttribute("entityType", Common.EntityType.USER);
+                        request.setAttribute("countEntity", countUsersOnCourse(course));
+                        List<User> usersOnCourse = getUsersOnCourse(course, Common.limit, offset);
+                        request.setAttribute("list", usersOnCourse);
+                        request.setAttribute("pageCourse", course);
+                        request.setAttribute("feedbackForUsersOnCourse", getFeedbackForUsersOnCourse(usersOnCourse, course));
+                        request.setAttribute("title", "title.courseCard");
 
-                        } else {
-                            // SHOW COURSE to not enrolled user
-                        }
+                        entries.add(new EntryKV("common.courseName",course.getCourseName()));
+                        entries.add(new EntryKV("course.startDate",course.getStartDate().toString()));
+                        entries.add(new EntryKV("course.finishDate",course.getFinishDate().toString()));
+                        entries.add(new EntryKV("common.tutor", new Integer(course.getTutor().getId()).toString()));
+                        entries.add(new EntryKV("course.capacity",new Integer(course.getCapacity()).toString()));
+                        request.setAttribute("entryList", entries);
+                        requestDispatcher = request.getRequestDispatcher("/card.jsp");
+                        requestDispatcher.forward(request,response);
+
                     } else {
                         response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     }

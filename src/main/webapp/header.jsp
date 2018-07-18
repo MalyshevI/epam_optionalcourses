@@ -2,11 +2,12 @@
 <%@ page import="java.util.ResourceBundle" %>
 
 <%
-    Locale locale = (Locale) request.getSession(false).getAttribute("locale");
+    //Locale locale = (Locale) request.getSession(false).getAttribute("locale");
+    Locale locale = Locale.US;
     ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
 
 %>
-<title><% out.print(request.getAttribute("title")); %></title>
+<title><% out.print(bundle.getString((String)request.getAttribute("title"))); %></title>
 <!-- connect bootstrap -->
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

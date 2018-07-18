@@ -95,4 +95,8 @@ public interface  CourseDao {
      * @return - resutl of deleting
      */
     boolean leaveCourse(Course course, User user);
+
+    List<User> getUsersOnCourse(Course course, long limit, long offset);
+
+    long countUsersOnCourse(Course course);
 }
