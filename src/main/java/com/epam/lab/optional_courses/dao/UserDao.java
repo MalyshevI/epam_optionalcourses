@@ -17,6 +17,8 @@ public interface UserDao {
 
     boolean checkForEmailAndPassword(String email, String password);
 
+    boolean checkForEmail(String email);
+
     User getByEmailAndPassword(String email, String password);
 
     boolean addUser(User user);

@@ -21,19 +21,22 @@ public class SecurityService {
     private static final Logger log = LogManager.getLogger(ConnectionPool.class);
     private static UserDaoImpl userDao = new UserDaoImpl();
 
-    public static boolean login(String email, String password) {
+    public static String hash(String password){
         Properties properties = new Properties();
         try {
             properties.load(SecurityService.class.getClassLoader().getResourceAsStream("security.properties"));
         } catch (IOException e) {
             log.log(Level.ERROR, "Can't open the authorization properties", e);
         }
-
         String salt = properties.getProperty("salt");
         String passwordSalt = password + salt;
-
         HashFunction hashFunction = Hashing.md5();
-        String passwordHash = hashFunction.hashString(passwordSalt).toString();
+
+        return hashFunction.hashString(passwordSalt).toString();
+    }
+
+    public static boolean login(String email, String password) {
+        String passwordHash = hash(password);
         return userDao.checkForEmailAndPassword(email, passwordHash);
 
     }

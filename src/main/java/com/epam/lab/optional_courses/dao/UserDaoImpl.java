@@ -23,6 +23,7 @@ public class UserDaoImpl implements UserDao {
     private static final String FIND_BY_ID;
 //    private static final String FIND_BY_NAME;
     private static final String GET_USER_BY_EMAIL_AND_PASSWORD;
+    private static final String GET_USER_BY_EMAIL;
     private static final String INSERT;
     private static final String UPDATE;
     private static final String DELETE;
@@ -44,6 +45,7 @@ public class UserDaoImpl implements UserDao {
         UPDATE = properties.getProperty("UPDATE_USER");
         DELETE = properties.getProperty("DELETE_USER");
         COUNT = properties.getProperty("COUNT_USERS");
+        GET_USER_BY_EMAIL = properties.getProperty("GET_USER_BY_EMAIL");
     }
 
 
@@ -219,6 +221,28 @@ public class UserDaoImpl implements UserDao {
             if (rs.next()
                     && rs.getString("email").equals(email)
                     && rs.getString("password").equals(password)) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+        } finally {
+            closeResources(stmt, rs, conn);
+        }
+        return false;
+    }
+
+    public boolean checkForEmail (String email){
+        Connection conn = connectionPool.getConnection();
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = conn.prepareStatement(GET_USER_BY_EMAIL);
+            stmt.setString(1, email);
+            rs = stmt.executeQuery();
+            if (rs.next()
+                    && rs.getString("email").equals(email)) {
                 return true;
             } else {
                 return false;
