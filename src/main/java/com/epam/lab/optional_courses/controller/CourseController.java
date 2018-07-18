@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import static com.epam.lab.optional_courses.service.CourseService.*;
 
@@ -28,15 +29,17 @@ public class CourseController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        String pathInfo = request.getPathInfo();
-        /*
-                AUTH - > USER
-        */
-
         //System.out.println("CONTROLLER STARTED" + new Date() );
-        User curUser = getUserById("41"); //current logined user
-        Long offset = 0L;
+        User curUser = (User) request.getSession().getAttribute("user");
+        if(curUser==null){
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
+            requestDispatcher.forward(request, response);
+        }
+        Locale locale = (Locale)request.getSession().getAttribute("locale");
+        curUser = getUserById("41"); //current logined user
+        request.setAttribute("locale", locale);
+        String pathInfo = request.getPathInfo();
+        long offset = 0L;
         String offsetStr;
         if (pathInfo == null) {
             offsetStr = request.getParameter("offset");
