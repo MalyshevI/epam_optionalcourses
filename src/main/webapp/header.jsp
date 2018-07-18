@@ -2,8 +2,9 @@
 <%@ page import="java.util.ResourceBundle" %>
 
 <%
-    Locale locale = Locale.US;
+    Locale locale = (Locale) request.getSession(false).getAttribute("locale");
     ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
+
 %>
 <title><% out.print(request.getAttribute("title")); %></title>
 <!-- connect bootstrap -->

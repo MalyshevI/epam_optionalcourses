@@ -1,3 +1,4 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page import="java.util.ResourceBundle" %>
 <%@ page import="java.util.Locale" %>
 <%@ page import="java.util.List" %>
@@ -27,14 +28,13 @@
         </div>
         <div class="information">
             <form action="" method="POST">
-                <%
-                    for (EntryKV field : fields) {
-                        out.print("<dl class=\"row\">");
-                        out.print("<dt class=\"col-sm-3\">" + field.getName() + "</dt>");
-                        out.print("<dd class=\"col-sm-9\"><input class=\"form-control\" placeholder=\"" + field.getValue() + "\"></dd>");
-                        out.print("</dl>");
-                    }
-                %>
+                <c:forEach items="${fields}" var="field">
+                    <dl class="row">
+                        <dt class="col-sm-3">${field.getName()}</dt>
+                        <dd class="col-sm-9"><input class="form-control" placeholder="${field.getValue()}"></dd>
+                    </dl>
+                    <br>
+                </c:forEach>
                 <button type="submit" class="btn btn-primary"><% bundle.getString("common.submit"); %></button>
             </form>
         </div>
