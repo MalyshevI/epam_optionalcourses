@@ -60,7 +60,7 @@
         <input type="text" id="email" name="email"  placeholder="Email"
                class="form-control" /> <br/>
         <input type="password"  placeholder=<% out.print(bundle.getString("common.password")); %>
-               id="password" name=<% out.print(bundle.getString("common.password")); %> class="form-control" /> <br />
+               id="password" name="password" class="form-control" /> <br />
         <input type = "submit" value = <% out.print(bundle.getString("common.submit")); %> />
         <td><span style="color:red"><%
             String errorMSG = (String)request.getAttribute("ErrorMessage");
