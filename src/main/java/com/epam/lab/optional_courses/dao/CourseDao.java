@@ -87,4 +87,12 @@ public interface  CourseDao {
      * @return return true if user enrolled on course
      */
     boolean isUserOnCourse(User user, Course course);
+
+    /**
+     * Leaving course by user
+     * @param course - given course
+     * @param user - given user
+     * @return - resutl of deleting
+     */
+    boolean leaveCourse(Course course, User user);
 }

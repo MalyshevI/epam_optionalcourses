@@ -36,6 +36,7 @@ public class CourseDaoImpl implements CourseDao {
     private static final String ENROLL_USER;
     private static final String COUNT_COURSES;
     private static final String IS_USER_ON_COURSE;
+    private static final String LEAVE_COURSE;
 
 
     static {
@@ -56,6 +57,7 @@ public class CourseDaoImpl implements CourseDao {
         ENROLL_USER = properties.getProperty("ENROLL_USER_ON_COURSE");
         COUNT_COURSES = properties.getProperty("COUNT_COURSES");
         IS_USER_ON_COURSE = properties.getProperty("IS_USER_ON_COURSE");
+        LEAVE_COURSE = properties.getProperty("LEAVE_COURSE");
     }
 
     /**
@@ -429,6 +431,36 @@ public class CourseDaoImpl implements CourseDao {
             closeResources(statement, resultSet, connection);
         }
         return false;
+    }
+
+    /**
+     * Leaving course by user
+     *
+     * @param course - given course
+     * @param user   - given user
+     * @return - resutl of deleting
+     */
+    @Override
+    public boolean leaveCourse(Course course, User user) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+
+        int rowNumber;
+
+        try {
+            connection = connectionPool.getConnection();
+            statement = connection.prepareStatement(LEAVE_COURSE);
+            statement.setInt(1, user.getId());
+            statement.setInt(2, course.getId());
+
+            rowNumber = statement.executeUpdate();
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+            return false;
+        } finally {
+            closeResources(statement, null, connection);
+        }
+        return rowNumber > 0;
     }
 
     private void closeResources(PreparedStatement statement, ResultSet resultSet, Connection connection) {

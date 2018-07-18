@@ -52,6 +52,14 @@ public class CourseService {
         return resultList;
     }
 
+    public static boolean deleteCourse(Course course){
+        return CommonDao.courseDao.deleteCourse(course);
+    }
+
+    public static boolean leaveCourse(Course course, User user){
+        return CommonDao.courseDao.leaveCourse(course, user);
+    }
+
     public static long countCourses(){
         return  CommonDao.courseDao.countCourses();
     }

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.epam.lab.optional_courses.service.CourseService.*;
+import static com.epam.lab.optional_courses.service.FeedbackService.deleteFeedback;
 
 @WebServlet(loadOnStartup = 1)
 public class CourseController extends HttpServlet {
@@ -85,11 +86,14 @@ public class CourseController extends HttpServlet {
                     request.setAttribute("offset", offset);
                     request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
 
-                    System.out.println("DATA WENT TO JSP" + new Date());
-                    RequestDispatcher requestDispatcher = request.getRequestDispatcher("src/main/webapp/list.jsp");
+                    //System.out.println("DATA WENT TO JSP" + new Date());
+                    RequestDispatcher requestDispatcher = request.getRequestDispatcher("list.jsp");
                     requestDispatcher.forward(request, response);
                     break;
                 case 2:
+                    if (splitedPath[1].equals("add")) {
+                        //RequestDispatcher requestDispatcher = request.getRequestDispatcher("src/main/webapp/list.jsp");
+                    }
                     course = getCourseById(splitedPath[1]);
                     if (course != null) {
                         if (curUser.equals(course.getTutor())) {
@@ -104,35 +108,57 @@ public class CourseController extends HttpServlet {
                         response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     }
                     break;
+                case 3:
+                    if (splitedPath[2].equals("edit")) {
+                        course = getCourseById(splitedPath[1]);
+                        if (course != null) {
+                            if (curUser.isAdmin()) {
+                                // show edit course
+                            } else {
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                            }
+                        }
+                    }
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    break;
                 case 4:
                     course = getCourseById(splitedPath[1]);
                     if (course != null) {
-                        if (splitedPath[2].equals("getfeedback")) {
-                            User givenUser = getUserById(splitedPath[3]);
-                            if (givenUser != null) {
-                                Feedback feedback = getFeedbackByUserAndCourse(curUser, course);
-                                if (feedback != null) {
-                                    if (curUser.equals(givenUser)) {
-                                        // SHOW FEEDBACK TO USER
-                                    } else if (curUser.equals(course.getTutor())) {
-                                        // SHOW FEEDBACK TO TUTOR
-                                    } else {
-
+                        User givenUser = getUserById(splitedPath[3]);
+                        if (givenUser != null) {
+                            Feedback feedback = getFeedbackByUserAndCourse(givenUser, course);
+                            switch (splitedPath[2]) {
+                                case "getfeedback":
+                                    if (feedback != null) {
+                                        if (curUser.equals(givenUser)) {
+                                            // SHOW FEEDBACK TO USER
+                                        } else if (curUser.equals(course.getTutor()) || curUser.isAdmin()) {
+                                            // SHOW FEEDBACK TO TUTOR
+                                        } else {
+                                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                        }
                                     }
-                                } else {
-                                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                                }
-
-                            } else {
-                                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                                    break;
+                                case "editfeedback":
+                                    if (feedback != null) {
+                                        if (curUser.equals(course.getTutor()) || curUser.isAdmin()) {
+                                            // SHOW FEEDBACK TO TUTOR EDIT
+                                        } else {
+                                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                        }
+                                    }
+                                    break;
+                                case "createfeedback":
+                                    if (curUser.equals(course.getTutor()) || curUser.isAdmin()) {
+                                        // SHOW FEEDBACK TO TUTOR CREATE
+                                    } else {
+                                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                    }
+                                    break;
                             }
-                        } else {
-                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
                         }
-                    } else {
-                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     }
-
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     break;
                 default:
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -145,6 +171,86 @@ public class CourseController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        System.out.println("coursecontroller dodelete");
+        User curUser = getUserById("41");// (User) request.getSession(false).getAttribute("user");
+        if (curUser == null) {
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
+            requestDispatcher.forward(request, response);
+        }
+        Locale locale = Locale.US;//  (Locale) request.getSession(false).getAttribute("locale");
+        request.setAttribute("locale", locale);
+        String pathInfo = request.getPathInfo();
+        if (pathInfo != null) {
+            String[] splitedPath = pathInfo.toLowerCase().split("/");
+            Course course = getCourseById(splitedPath[1]);
+            if(course!=null) {
+                String userIdStr = null;
+                String answer = null;
+                String symbol = (request.getHeader("referer").contains("?")?"&":"?");
+                System.out.println(symbol);
+                switch (splitedPath[2]) {
+                    case "delete":
+                        userIdStr = request.getParameter("userId");
+                        if (userIdStr != null) {
+                            //delete user from course
+                            User givenUser = getUserById(userIdStr);
+                            if (givenUser != null) {
+                                if (curUser.isAdmin() || givenUser.equals(curUser)) {
+                                    if (leaveCourse(course, givenUser)) {
+                                        answer = "common.userLeftCourse";
+                                    } else {
+                                        answer = "common.userLeftCourseFail";
+                                    }
+                                    response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
+                                } else {
+                                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                }
+                            }
+                        } else {
+                            //delete course
+                            if (curUser.isAdmin()) {
+                                if (deleteCourse(course)) {
+                                    answer = "common.courseDeleted";
+                                } else {
+                                    answer = "common.courseDeletedFail";
+                                }
+                                response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
+                            }else {
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                            }
+                        }
+                        break;
+                    case "deletefeedback":
+                        userIdStr = request.getParameter("userId");
+                        if (userIdStr != null) {
+                            User givenUser = getUserById(userIdStr);
+                            if (givenUser != null) {
+                                Feedback feedback = getFeedbackByUserAndCourse(givenUser, course);
+                                if(feedback!= null){
+                                    if(curUser.isAdmin() || curUser.equals(course.getTutor())){
+                                        if (deleteFeedback(feedback)) {
+                                            answer = "common.feedbackDeleted";
+                                        } else {
+                                            answer = "common.feedbackDeletedFail";
+                                        }
+                                        response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
+                                    }else {
+                                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+        //response.sendError(HttpServletResponse.SC_NOT_FOUND);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest request,
+                            HttpServletResponse response)
             throws ServletException, IOException {
 
     }

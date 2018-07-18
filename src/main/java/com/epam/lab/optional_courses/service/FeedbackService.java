@@ -1,5 +1,6 @@
 package com.epam.lab.optional_courses.service;
 
+import com.epam.lab.optional_courses.controller.Common;
 import com.epam.lab.optional_courses.dao.CommonDao;
 import com.epam.lab.optional_courses.entity.Course;
 import com.epam.lab.optional_courses.entity.Feedback;
@@ -24,5 +25,9 @@ public class FeedbackService {
             resultList.add(CommonDao.feedbackDao.getFeedbackByUserAndCourse(user, curCourse));
         }
         return resultList;
+    }
+
+    public static boolean deleteFeedback(Feedback feedback){
+        return CommonDao.feedbackDao.deleteFeedback(feedback);
     }
 }
