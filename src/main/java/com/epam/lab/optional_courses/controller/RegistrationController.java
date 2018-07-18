@@ -42,31 +42,26 @@ public class RegistrationController extends HttpServlet {
         String password = request.getParameter("password");
         List<String> parameterNames = new ArrayList<String>(request.getParameterMap().keySet());
         System.out.println(parameterNames);
-        if (!RegistrationService.checkEmail(email) &&
-                email != null &&
+        if (email != null &&
                 password != null &&
                 name != null &&
-                lastName != null)
-        {
-            password = SecurityService.hash(password);
-            if (!RegistrationService.insertUser(name, lastName, email, password)){
-                System.out.println("Something went wrong");
-            }
-            else{
-                System.out.println("User registered");
-            }
-        }
-        else {
-            if (RegistrationService.checkEmail(email)){
+                lastName != null) {
+            if (!RegistrationService.checkEmail(email)) {
+                password = SecurityService.hash(password);
+                if (!RegistrationService.insertUser(name, lastName, email, password)) {
+                    System.out.println("Something went wrong");
+                } else {
+                    System.out.println("User registered");
+                }
+            } else {
                 request.setAttribute("ErrorMessage", bundle.getString("reg.emailIsPresent"));
                 RequestDispatcher dispatcher = request.getRequestDispatcher("/Registration.jsp");
                 dispatcher.forward(request, response);
             }
-            else {
-                request.setAttribute("ErrorMessage", bundle.getString("reg.emptyFields"));
-                RequestDispatcher dispatcher = request.getRequestDispatcher("/Registration.jsp");
-                dispatcher.forward(request, response);
-            }
+        } else {
+            request.setAttribute("ErrorMessage", bundle.getString("reg.emptyFields"));
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/Registration.jsp");
+            dispatcher.forward(request, response);
         }
     }
 
