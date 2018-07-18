@@ -13,8 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -47,16 +45,14 @@ public class AuthController extends HttpServlet {
         String password = request.getParameter("password");
         List<String> parameterNames = new ArrayList<String>(request.getParameterMap().keySet());
         System.out.println(parameterNames);
-
         if (SecurityService.login(email, password)) {
             System.out.println("Login +");
-            response.sendRedirect("/WelcomeUser.jsp");
+//            response.sendRedirect("/");
             HttpSession session = request.getSession();
             session.setAttribute("user", SecurityService.getUserByCreds(email, password));
+            session.setAttribute("locale",locale);
         } else {
             System.out.println("Login -");
-//            String errorMsg=(String)request.getAttribute("ErrorMessage");
-
             request.setAttribute("ErrorMessage", bundle.getString("login.error"));
             RequestDispatcher dispatcher = request.getRequestDispatcher("/Login.jsp");
             dispatcher.forward(request, response);

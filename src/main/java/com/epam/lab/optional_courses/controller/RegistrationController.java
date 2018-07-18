@@ -42,10 +42,10 @@ public class RegistrationController extends HttpServlet {
         String password = request.getParameter("password");
         List<String> parameterNames = new ArrayList<String>(request.getParameterMap().keySet());
         System.out.println(parameterNames);
-        if (email != null &&
-                password != null &&
-                name != null &&
-                lastName != null) {
+        if (!email.isEmpty() &&
+                !password.isEmpty()&&
+                !name.isEmpty()&&
+                !lastName.isEmpty()) {
             if (!RegistrationService.checkEmail(email)) {
                 password = SecurityService.hash(password);
                 if (!RegistrationService.insertUser(name, lastName, email, password)) {
