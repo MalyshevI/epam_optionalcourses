@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class UserController extends HttpServlet {
-    private static final Logger log = LogManager.getLogger(MainController.class);
+    private static final Logger log = LogManager.getLogger(UserController.class);
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
