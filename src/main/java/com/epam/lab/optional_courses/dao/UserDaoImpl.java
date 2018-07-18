@@ -21,7 +21,6 @@ public class UserDaoImpl implements UserDao {
 
     private static final String FIND_ALL;
     private static final String FIND_BY_ID;
-//    private static final String FIND_BY_NAME;
     private static final String GET_USER_BY_EMAIL_AND_PASSWORD;
     private static final String GET_USER_BY_EMAIL;
     private static final String INSERT;
@@ -39,7 +38,6 @@ public class UserDaoImpl implements UserDao {
         }
         FIND_ALL = properties.getProperty("FIND_ALL_USERS");
         FIND_BY_ID = properties.getProperty("GET_USER_BY_ID");
-//        FIND_BY_NAME = properties.getProperty("GET_USER_BY_NAME");
         GET_USER_BY_EMAIL_AND_PASSWORD = properties.getProperty("GET_USER_BY_EMAIL_AND_PASSWORD");
         INSERT = properties.getProperty("ADD_USER");
         UPDATE = properties.getProperty("UPDATE_USER");
@@ -82,7 +80,7 @@ public class UserDaoImpl implements UserDao {
     }
 
 
-        @Override
+    @Override
     public long countAllUsers() {
         Connection conn = connectionPool.getConnection();
         PreparedStatement stmt = null;
@@ -91,7 +89,7 @@ public class UserDaoImpl implements UserDao {
         try {
             stmt = conn.prepareStatement(COUNT);
             rs = stmt.executeQuery();
-            while (rs.next()){
+            while (rs.next()) {
                 result = rs.getLong(1);
             }
         } catch (SQLException e) {
@@ -109,7 +107,7 @@ public class UserDaoImpl implements UserDao {
         ResultSet rs = null;
         try {
             stmt = conn.prepareStatement(FIND_BY_ID);
-            stmt.setInt(1,id);
+            stmt.setInt(1, id);
             rs = stmt.executeQuery();
             User user;
             if (rs.next()) {
@@ -233,7 +231,7 @@ public class UserDaoImpl implements UserDao {
         return false;
     }
 
-    public boolean checkForEmail (String email){
+    public boolean checkForEmail(String email) {
         Connection conn = connectionPool.getConnection();
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -261,8 +259,8 @@ public class UserDaoImpl implements UserDao {
         ResultSet rs = null;
         try {
             stmt = conn.prepareStatement(GET_USER_BY_EMAIL_AND_PASSWORD);
-            stmt.setString(1,email);
-            stmt.setString(2,password);
+            stmt.setString(1, email);
+            stmt.setString(2, password);
             rs = stmt.executeQuery();
             User user;
             if (rs.next()) {
