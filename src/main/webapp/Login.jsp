@@ -1,7 +1,12 @@
+<%@ page import="java.util.Locale" %>
+<%@ page import="java.util.ResourceBundle" %><%
+    Locale locale = Locale.US;
+    ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
+%>
 
 <html>
 <head>
-    <title>Page Title</title>
+    <title>Login</title>
     <!-- connect bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
@@ -49,16 +54,21 @@
 
 <div class="container">
     <form action="/auth" method="POST" class="form-signin" >
-        <h3 class="form-signin-heading" text="Welcome"></h3>
+        <h3 class="form-signin-heading" text=<% out.print(bundle.getString("login.welcome")); %>></h3>
         <br/>
 
         <input type="text" id="email" name="email"  placeholder="Email"
                class="form-control" /> <br/>
-        <input type="password"  placeholder="Password"
-               id="password" name="password" class="form-control" /> <br />
-        <input type = "submit" value = "Submit" />
-        <td><span style="color:red"><%=(request.getAttribute("ErrorMessage") == null) ? ""
-                : request.getAttribute("errMessage")%></span></td>
+        <input type="password"  placeholder=<% out.print(bundle.getString("common.password")); %>
+               id="password" name=<% out.print(bundle.getString("common.password")); %> class="form-control" /> <br />
+        <input type = "submit" value = <% out.print(bundle.getString("common.submit")); %> />
+        <td><span style="color:red"><%
+            String errorMSG = (String)request.getAttribute("ErrorMessage");
+            if(errorMSG!=null){
+                out.print(errorMSG);
+            }
+
+        %></span></td>
     </form>
 </div>
 </body>

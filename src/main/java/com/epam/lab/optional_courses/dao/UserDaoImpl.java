@@ -213,6 +213,8 @@ public class UserDaoImpl implements UserDao {
         ResultSet rs = null;
         try {
             stmt = conn.prepareStatement(GET_USER_BY_EMAIL_AND_PASSWORD);
+            stmt.setString(1, email);
+            stmt.setString(2, password);
             rs = stmt.executeQuery();
             if (rs.next()
                     && rs.getString("email").equals(email)
