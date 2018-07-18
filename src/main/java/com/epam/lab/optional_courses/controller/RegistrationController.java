@@ -1,29 +1,73 @@
 package com.epam.lab.optional_courses.controller;
 
 
+import com.epam.lab.optional_courses.service.RegistrationService;
+import com.epam.lab.optional_courses.service.SecurityService;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.servlet.Registration;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class RegistrationController extends HttpServlet {
-    private static final Logger log = LogManager.getLogger(MainController.class);
+    private static final Logger log = LogManager.getLogger(AuthController.class);
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.getWriter().println("Hello World!");
+        RequestDispatcher requestDispatcher = request.getRequestDispatcher("/Registration.jsp");
+        requestDispatcher.forward(request, response);
+        System.out.println("Registration doGet");
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.getWriter().println("Hello World!");
+        Locale locale = Locale.US;
+        ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
+        System.out.println("Regcontroller doPost");
+        String name = request.getParameter("name");
+        String lastName = request.getParameter("lastName");
+        String email = request.getParameter("email");
+        String password = request.getParameter("password");
+        List<String> parameterNames = new ArrayList<String>(request.getParameterMap().keySet());
+        System.out.println(parameterNames);
+        if (!RegistrationService.checkEmail(email) &&
+                email != null &&
+                password != null &&
+                name != null &&
+                lastName != null)
+        {
+            password = SecurityService.hash(password);
+            if (!RegistrationService.insertUser(name, lastName, email, password)){
+                System.out.println("Something went wrong");
+            }
+            else{
+                System.out.println("User registered");
+            }
+        }
+        else {
+            if (RegistrationService.checkEmail(email)){
+                request.setAttribute("ErrorMessage", bundle.getString("reg.emailIsPresent"));
+                RequestDispatcher dispatcher = request.getRequestDispatcher("/Registration.jsp");
+                dispatcher.forward(request, response);
+            }
+            else {
+                request.setAttribute("ErrorMessage", bundle.getString("reg.emptyFields"));
+                RequestDispatcher dispatcher = request.getRequestDispatcher("/Registration.jsp");
+                dispatcher.forward(request, response);
+            }
+        }
     }
 
     @Override
