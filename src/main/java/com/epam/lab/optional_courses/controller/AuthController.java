@@ -17,6 +17,8 @@ import java.io.PrintWriter;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 @WebServlet(loadOnStartup = 1)
 public class AuthController extends HttpServlet {
@@ -37,9 +39,10 @@ public class AuthController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        doGet(request, response);
+//        doGet(request, response);
+        Locale locale = Locale.US;
+        ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
         System.out.println("Authcontroller doPost");
-        PrintWriter out = response.getWriter();
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         List<String> parameterNames = new ArrayList<String>(request.getParameterMap().keySet());
@@ -52,9 +55,9 @@ public class AuthController extends HttpServlet {
             session.setAttribute("user", SecurityService.getUserByCreds(email, password));
         } else {
             System.out.println("Login -");
-            out.println("Wrong email or password");
-            request.setAttribute("ErrorMessage", "Wrong email or password");
-//                 String errorMsg=(String)request.getAttribute("ErrorMessage");
+//            String errorMsg=(String)request.getAttribute("ErrorMessage");
+
+            request.setAttribute("ErrorMessage", bundle.getString("login.error"));
             RequestDispatcher dispatcher = request.getRequestDispatcher("/Login.jsp");
             dispatcher.forward(request, response);
         }
