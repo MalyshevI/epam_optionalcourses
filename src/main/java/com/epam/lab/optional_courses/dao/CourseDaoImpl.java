@@ -40,6 +40,8 @@ public class CourseDaoImpl implements CourseDao {
     private static final String GET_USERS_ON_COURSE;
     private static final String COUNT_USERS_ON_COURSE;
     private static final String COUNT_COURSES_BY_USER;
+    private static final String DELETE_COURSE_USERS;
+    private static final String DELETE_COURSE_FEEDBACKS;
 
 
     static {
@@ -64,6 +66,8 @@ public class CourseDaoImpl implements CourseDao {
         GET_USERS_ON_COURSE = properties.getProperty("GET_USERS_ON_COURSE");
         COUNT_USERS_ON_COURSE = properties.getProperty("COUNT_USERS_ON_COURSE");
         COUNT_COURSES_BY_USER = properties.getProperty("COUNT_COURSES_BY_USER");
+        DELETE_COURSE_USERS = properties.getProperty("DELETE_COURSE_USERS");
+        DELETE_COURSE_FEEDBACKS = properties.getProperty("DELETE_COURSE_FEEDBACKS");
 
     }
 
@@ -293,15 +297,23 @@ public class CourseDaoImpl implements CourseDao {
         Connection connection = null;
         PreparedStatement statement = null;
 
-        int rowNumber;
+        int rowNumber = 0;
 
         try {
             connection = connectionPool.getConnection();
-            statement = connection.prepareStatement(DELETE);
 
+            statement = connection.prepareStatement(DELETE_COURSE_FEEDBACKS);
             statement.setInt(1, course.getId());
+            rowNumber += statement.executeUpdate();
 
-            rowNumber = statement.executeUpdate();
+            statement = connection.prepareStatement(DELETE_COURSE_USERS);
+            statement.setInt(1, course.getId());
+            rowNumber += statement.executeUpdate();
+
+            statement = connection.prepareStatement(DELETE);
+            statement.setInt(1, course.getId());
+            rowNumber += statement.executeUpdate();
+
         } catch (SQLException e) {
             log.log(Level.ERROR, e);
             return false;
