@@ -34,7 +34,7 @@ public class User {
         this.lastName = lastName;
         this.email = email;
         this.password = password;
-        this.isAdmin = false;
+        this.isAdmin = isAdmin;
     }
 
     public User(String firstName, String lastName, String email, String password){
@@ -44,8 +44,16 @@ public class User {
         this.password = password;
     }
 
+    public User(User user){
+        isAdmin = user.isAdmin;
+        firstName = user.firstName;
+        lastName = user.lastName;
+        password = user.password;
+        email = user.email;
+    }
+
     public int getId(){
-        return id;
+        return this.id;
     }
 
     public void setId(int id){
@@ -53,7 +61,7 @@ public class User {
     }
 
     public String getFirstName(){
-        return firstName;
+        return this.firstName;
     }
 
     public void setFirstName(String firstName){
@@ -61,7 +69,7 @@ public class User {
     }
 
     public String getLastName(){
-        return lastName;
+        return this.lastName;
     }
 
     public void setLastName(String lastName){
@@ -69,7 +77,7 @@ public class User {
     }
 
     public String getEmail(){
-        return email;
+        return this.email;
     }
 
     public void setEmail(String email){
@@ -77,7 +85,7 @@ public class User {
     }
 
     public String getPassword(){
-        return password;
+        return this.password;
     }
 
     public void setPassword(String password){
@@ -85,7 +93,7 @@ public class User {
     }
 
     public boolean isAdmin() {
-        return isAdmin;
+        return this.isAdmin;
     }
 
     public void setAdmin(boolean isAdmin) {
