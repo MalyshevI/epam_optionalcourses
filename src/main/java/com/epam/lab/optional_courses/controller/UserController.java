@@ -391,62 +391,88 @@ public class UserController extends HttpServlet {
 
                     case "edit":
 
+                        userIdStr = request.getParameter("userId");
+                        if (userIdStr != null) {
+                            User givenUser = getUserById(userIdStr);
+                            if (givenUser != null) {
+                                if (curUser.isAdmin()) {
 
-                        if(curUser.isAdmin()){
-                            userIdStr = request.getParameter("userId");
-                            if (userIdStr != null){
-                                User givenUser = getUserById(userIdStr)){
-                                    if (givenUser != null){
-
+                                    givenUser.setFirstName(request.getParameter("common.name"));
+                                    givenUser.setLastName(request.getParameter("common.lastname"));
+                                    //проверить мэил
+                                    givenUser.setEmail(request.getParameter("common.email"));
+                                    givenUser.setPassword(request.getParameter("common.password"));
+                                    if (updateUser(givenUser)) {
+                                        answer = "common.userDeleted";
+                                    } else {
+                                        answer = "common.userDeletedFail";
                                     }
+                                    response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                } else if (givenUser.equals(curUser)) {
+                                    givenUser.setFirstName(request.getParameter("common.name"));
+                                    givenUser.setLastName(request.getParameter("common.lastname"));
+                                    //проверить мэил
+                                    givenUser.setEmail(request.getParameter("common.email"));
+                                    givenUser.setPassword(request.getParameter("common.password"));
+                                    if (updateUser(givenUser)) {
+                                        RequestDispatcher requestDispatcher = request.getRequestDispatcher("/Login.jsp");
+                                        requestDispatcher.forward(request, response);
+                                    }
+                                } else {
+                                    answer = "common.userDeletedFail";
+                                    response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                                 }
+                            } else {
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN);
                             }
-
                         }
-
-
-
-                        if (curUser.getId())
-
-
-                        User user = new User();
-
-                        user.setFirstName(request.getParameter("common.name"));
-                        user.setLastName(request.getParameter("common.lastname"));
-
-                        //проверить емэил
-                        user.setEmail(request.getParameter("common.email"));
-                        user.setPassword(request.getParameter("common.password"));
-
-
-                        user.
-                        CommonDao.userDao.updateUser()
-
 
                         break;
 
                     case "add":
+                        userIdStr = request.getParameter("userId");
+                        if (userIdStr != null) {
+                            User givenUser = getUserById(userIdStr);
+                            if (givenUser != null) {
+                                if (curUser.isAdmin()) {
 
-                        break;
+                                    givenUser.setFirstName(request.getParameter("common.name"));
+                                    givenUser.setLastName(request.getParameter("common.lastname"));
+                                    //проверить мэил
+                                    givenUser.setEmail(request.getParameter("common.email"));
+                                    givenUser.setPassword(request.getParameter("common.password"));
+                                    if (updateUser(givenUser)) {
+                                        answer = "common.userDeleted";
+                                    } else {
+                                        answer = "common.userDeletedFail";
+                                    }
+                                    response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                } else {
+                                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                }
+                            }
+                        }
+                                break;
+                            }
+                        }
                 }
+
             }
-        }
-    }
 
-    @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+            @Override
+            protected void doDelete (HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.getWriter().println("Hello World!");
-    }
+                response.getWriter().println("Hello World!");
+            }
 
-    @Override
-    public void init() throws ServletException {
-        log.log(Level.INFO, "Servlet " + this.getServletName() + " has started");
-    }
+            @Override
+            public void init () throws ServletException {
+                log.log(Level.INFO, "Servlet " + this.getServletName() + " has started");
+            }
 
-    @Override
-    public void destroy() {
-        log.log(Level.INFO, "Servlet " + this.getServletName() + " has stopped");
-    }
+            @Override
+            public void destroy () {
+                log.log(Level.INFO, "Servlet " + this.getServletName() + " has stopped");
+            }
 
-}
+        }

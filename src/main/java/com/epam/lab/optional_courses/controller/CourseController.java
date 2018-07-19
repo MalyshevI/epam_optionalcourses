@@ -25,6 +25,7 @@ import java.util.Locale;
 
 import static com.epam.lab.optional_courses.service.CourseService.*;
 import static com.epam.lab.optional_courses.service.FeedbackService.*;
+import static com.epam.lab.optional_courses.service.UserService.getUserById;
 
 @WebServlet(loadOnStartup = 1)
 public class CourseController extends HttpServlet {
