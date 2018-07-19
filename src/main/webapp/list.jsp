@@ -4,36 +4,29 @@
 <%@ page import="com.epam.lab.optional_courses.entity.Course" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Date" %>
-<%@ page import="com.sun.javafx.scene.control.skin.DateCellSkin" %>
-<%@ page import="java.time.LocalDateTime" %>
-<%@ page import="java.time.LocalTime" %>
 <%@ page import="com.epam.lab.optional_courses.entity.User" %>
-<%@ page import="java.net.URLClassLoader" %>
-<%@ page import="java.net.URL" %>
-<%@ page import="java.io.File" %>
 <%@ page import="com.epam.lab.optional_courses.entity.Feedback" %>
-<!--@ taglib uri="http://java.sun.com/jstl/fmt" prefix="fmt" fmt:setBundle basename="i18n.WelcomeBundle" /> -->
 
-<html>
-<head>
-    <jsp:include page="header.jsp"/>
-</head>
-<body>
-<jsp:include page="navbar.jsp"/>
 
 <div class="content">
+    <%
+        ResourceBundle bundle = ResourceBundle.getBundle("i18n", (Locale) request.getAttribute("locale"));
+        String strAnswer = request.getParameter("answer");
+        System.out.println(strAnswer);
+        if(strAnswer!=null){
+            out.print(bundle.getString(strAnswer));
+        }
+    %>
     <table class="table">
         <thead>
         <tr>
                 <%
-                ResourceBundle bundle = ResourceBundle.getBundle("i18n", (Locale) request.getAttribute("locale"));
-
                 Common.EntityType entityType = (Common.EntityType) request.getAttribute("entityType");
                 Long offset = (Long) request.getAttribute("offset");
-                System.out.println(offset);
                 User curUser = (User) request.getAttribute("curUser");
                 long countEntity = (long) request.getAttribute("countEntity");
-                long countPages = countEntity / Common.limit + 1;
+                long countPages = countEntity / Common.limit;
+                countPages += countEntity%Common.limit == 0 ? 0 : 1;
                 long curPageNumber = offset / Common.limit + 1;
 
 
@@ -94,7 +87,7 @@
                         if (curUser.isAdmin()) {
                             out.print("<td width=\"40\">");
                             out.print("<a class=\"btn btn-outline-primary\"\" href=\"/course/" + course.getId() + "/edit\" role=\"button\">" + bundle.getString("common.edit") + " " + bundle.getString("common.course") + "</a>");
-                            out.print("<form action=\"/course/"+ course.getId() + "/delete\" method=\"DELETE\">\n" +
+                            out.print("<form action=\"/course/"+ course.getId() + "/delete\" method=\"POST\">\n" +
                                         "\t<button type=\"submit\" class=\"btn btn-outline-primary\">" + bundle.getString("common.delete") + " " + bundle.getString("common.course") + "</button>\n" +
                                         "</form>");
                             out.print("</td>");
@@ -102,15 +95,18 @@
                         if (!curUser.equals(course.getTutor())) {
                             if(!status.equals(bundle.getString("course.courseFinished"))){
                                 if (coursesEnrolledByCurUser.get(i)) {
-                                    out.print("<td width=\"40\">");
-                                    out.print("<a class=\"btn btn-outline-primary\"\" href=\"/course/" + course.getId() + "/leave\" role=\"button\">" + bundle.getString("common.leave") + " " + bundle.getString("common.course") + "</a>");
-                                    out.print("</td>");
-                                } else {
                                     if(pageUser!= null){
+                                    out.print("<td width=\"40\">");
+                                    out.print("<form action=\"/course/"+ course.getId() + "/delete\" method=\"POST\">\n" +
+                                        "\t<button type=\"submit\" class=\"btn btn-outline-primary\">" + bundle.getString("common.leave") + " "+ bundle.getString("common.from") + " " + bundle.getString("common.course") + "</button>\n" +
+                                        "<input name=\"userId\" type=\"hidden\" value=\""+ curUser.getId() +"\">" +
+                                        "</form>");
+                                    out.print("</td>");
+                                    }
+                                } else {
                                         out.print("<td width=\"40\">");
                                         out.print("<a class=\"btn btn-outline-primary\"\" href=\"/course/" + course.getId() + "/apply\" role=\"button\">" + bundle.getString("common.apply") + " " + bundle.getString("common.course") +"</a>");
                                         out.print("</td>");
-                                    }
                                 }
                             }
                         }
@@ -151,9 +147,13 @@
                             Feedback feedback = feedbackForUsersOnCourse.get(i);
                             if(feedback != null){
                                 out.println("<td width=\"40\">" + feedback.getGrade() + "</td>");
-                                if (curUser.equals(pageCourse.getTutor())) {
+                                if (curUser.equals(pageCourse.getTutor()) || curUser.isAdmin()) {
                                     out.print("<td width=\"40\">");
                                     out.print("<a class=\"btn btn-outline-primary\"\" href=\"/course/" + pageCourse.getId() + "/edit/"+ user.getId() +"\" role=\"button\">" + bundle.getString("common.edit") + " " + bundle.getString("common.feedback") + "</a>");
+                                    out.print("<form action=\"/course/"+ pageCourse.getId() + "/deletefeedback\" method=\"POST\">\n" +
+                                        "\t<button type=\"submit\" class=\"btn btn-outline-primary\">" + bundle.getString("common.delete") + " " +bundle.getString("common.student") + " " + bundle.getString("common.feedback") + "</button>\n" +
+                                        "<input name=\"userId\" type=\"hidden\" value=\""+ user.getId() +"\">" +
+                                        "</form>");
                                     out.print("</td>");
                                 }
                             }else{
@@ -163,12 +163,20 @@
                                     out.print("</td>");
                                 }
                             }
+                            if(curUser.isAdmin()){
+                                out.print("<form action=\"/course/"+ pageCourse.getId() + "/delete\" method=\"POST\">\n" +
+                                        "\t<button type=\"submit\" class=\"btn btn-outline-primary\">" + bundle.getString("common.delete") + " " + bundle.getString("common.student") + " "+ bundle.getString("common.from") + " " + bundle.getString("common.course") + "</button>\n" +
+                                        "<input name=\"userId\" type=\"hidden\" value=\""+ user.getId() +"\">" +
+                                        "</form>");
+                            }
 
                         } else{
                             if (curUser.isAdmin()) {
                                     out.print("<td width=\"40\">");
                                     out.print("<a class=\"btn btn-outline-primary\"\" href=\"/user/" + user.getId() + "/edit\" role=\"button\">" + bundle.getString("common.edit") + " " + bundle.getString("common.user") + "</a>");
-                                    out.print("<a class=\"btn btn-outline-primary\"\" href=\"/user/" + user.getId() + "/delete\" role=\"button\">" + bundle.getString("common.delete") + " " + bundle.getString("common.user") + "</a>");
+                                    out.print("<form action=\"/user/"+ user.getId() + "/delete\" method=\"POST\">\n" +
+                                        "\t<button type=\"submit\" class=\"btn btn-outline-primary\">" + bundle.getString("common.delete") + " " + bundle.getString("common.user") + "</button>\n" +
+                                        "</form>");
                                     out.print("</td>");
                                 }
                         }
@@ -179,7 +187,6 @@
                     break;
             }
         %>
-        </tbody>
     </table>
 </div>
 <div class="pag">
@@ -201,6 +208,3 @@
         </ul>
     </nav>
 </div>
-<jsp:include page="footer.jsp"/>
-</body>
-</html>

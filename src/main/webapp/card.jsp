@@ -4,6 +4,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="com.epam.lab.optional_courses.service.components.EntryKV" %>
 
+
 <%
     Locale locale = (Locale) request.getAttribute("locale");
     ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
@@ -21,13 +22,12 @@
     <div class="topWrapper">
         <div class="card" style="width: 18rem;">
             <img class="card-img-top" src="<% out.print("static/images/akalji.jpg"); %>" alt="Card image cap"
-                 height="320px" width="240">
+                 height="320px" width="240"/>
             <div class="card-body">
                 <p class="card-text"><% out.print(request.getAttribute("cardText") != null ? "" : (String) request.getAttribute("cardText")); %></p>
             </div>
         </div>
         <div class="information">
-
             <%
                 for (EntryKV field:fields) {
                     out.println("<dl class=\"row\">");
@@ -39,11 +39,11 @@
             %>
         </div>
     </div>
-    <div class="table">
-
-    </div>
 </div>
 
+<div class="table">
+<jsp:include page="list.jsp"/>
+</div>
 <jsp:include page="footer.jsp"/>
 </body>
 </html>

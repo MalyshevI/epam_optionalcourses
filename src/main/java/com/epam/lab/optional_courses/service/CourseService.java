@@ -44,7 +44,23 @@ public class CourseService {
         return resultList;
     }
 
+    public static boolean deleteCourse(Course course){
+        return CommonDao.courseDao.deleteCourse(course);
+    }
+
+    public static boolean leaveCourse(Course course, User user){
+        return CommonDao.courseDao.leaveCourse(course, user);
+    }
+
     public static long countCourses(){
         return  CommonDao.courseDao.countCourses();
+    }
+
+    public static List<User> getUsersOnCourse(Course course, long limit, long offset){
+        return CommonDao.courseDao.getUsersOnCourse(course, limit, offset);
+    }
+
+    public static long countUsersOnCourse(Course course){
+        return CommonDao.courseDao.countUsersOnCourse(course);
     }
 }
