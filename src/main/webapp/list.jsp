@@ -6,16 +6,13 @@
 <%@ page import="java.util.Date" %>
 <%@ page import="com.epam.lab.optional_courses.entity.User" %>
 <%@ page import="com.epam.lab.optional_courses.entity.Feedback" %>
+<%@ page import="java.time.LocalDate" %>
 
 
 <div class="content">
     <%
         ResourceBundle bundle = ResourceBundle.getBundle("i18n", (Locale) request.getAttribute("locale"));
-        String strAnswer = request.getParameter("answer");
-        System.out.println(strAnswer);
-        if(strAnswer!=null){
-            out.print(bundle.getString(strAnswer));
-        }
+
     %>
     <table class="table">
         <thead>
@@ -64,11 +61,11 @@
                         out.println("<td width=\"40\">" + (offset + i + 1) + "</td>");
                         out.println("<td width=\"40\"> <a href=\"/course/" + course.getId() + "\"> " + course.getCourseName() + " </a></td>");
                         out.println("<td width=\"40\"> <a href=\"/user/" + course.getTutor().getId() + "\"> " + course.getTutor().getFirstName() + course.getTutor().getLastName() + " </a></td>");
-                        Date curDate = new Date();
+                        LocalDate curDate = LocalDate.now();
                         String status;
-                        if (curDate.before(course.getStartDate())) {
+                        if (curDate.isBefore(course.getStartDate())) {
                             status = bundle.getString("course.registrationOpen");
-                        } else if (curDate.before(course.getFinishDate())) {
+                        } else if (curDate.isBefore(course.getFinishDate())) {
                             status = bundle.getString("course.courseGoing");
                         } else {
                             status = bundle.getString("course.courseFinished");
@@ -81,12 +78,14 @@
                                 if(pageUser.equals(curUser)){
                                     out.println("<td width=\"40\"> <a href=\"/course/" + course.getId() + "getFeedback" + pageUser.getId() + "\"> " + bundle.getString("common.feedback") + " </a></td>");
                                 }
+                            }else{
+                                out.println("<td width=\"40\"> </td>");
                             }
                         }
                         // BUTTONS
                         if (curUser.isAdmin()) {
                             out.print("<td width=\"40\">");
-                            out.print("<a class=\"btn btn-outline-primary\"\" href=\"/course/" + course.getId() + "/edit\" role=\"button\">" + bundle.getString("common.edit") + " " + bundle.getString("common.course") + "</a>");
+                            out.print("<a class=\"btn btn-outline-primary\" href=\"/course/" + course.getId() + "/edit\" role=\"button\">" + bundle.getString("common.edit") + " " + bundle.getString("common.course") + "</a>");
                             out.print("<form action=\"/course/"+ course.getId() + "/delete\" method=\"POST\">\n" +
                                         "\t<button type=\"submit\" class=\"btn btn-outline-primary\">" + bundle.getString("common.delete") + " " + bundle.getString("common.course") + "</button>\n" +
                                         "</form>");
@@ -102,10 +101,12 @@
                                         "<input name=\"userId\" type=\"hidden\" value=\""+ curUser.getId() +"\">" +
                                         "</form>");
                                     out.print("</td>");
+                                    }else{
+                                        out.println("<td> </td>");
                                     }
                                 } else {
                                         out.print("<td width=\"40\">");
-                                        out.print("<a class=\"btn btn-outline-primary\"\" href=\"/course/" + course.getId() + "/apply\" role=\"button\">" + bundle.getString("common.apply") + " " + bundle.getString("common.course") +"</a>");
+                                        out.print("<a class=\"btn btn-outline-primary\" href=\"/course/" + course.getId() + "/apply\" role=\"button\">" + bundle.getString("common.apply") + " " + bundle.getString("common.course") +"</a>");
                                         out.print("</td>");
                                 }
                             }
@@ -118,6 +119,7 @@
                 case USER:
                         List<User> allUsers = (List<User>) request.getAttribute("list");
                         Course pageCourse = (Course) request.getAttribute("pageCourse");
+                        System.out.println(pageCourse);
                         List<Feedback> feedbackForUsersOnCourse = null;
                         if(pageCourse != null){
                             feedbackForUsersOnCourse = (List<Feedback>) request.getAttribute("feedbackForUsersOnCourse");
@@ -130,6 +132,7 @@
                         if(pageCourse != null){
                             out.println("<th width=\"40\" scope=\"col\">" + bundle.getString("common.grade") + "</th>");
                         }
+                        out.println("<th width=\"40\" scope=\"col\">" + "Buttons" +"</th>");
                         out.println("</tr>\n" +
                                 "        </thead>\n" +
                                 "        <tbody>");
@@ -149,8 +152,8 @@
                                 out.println("<td width=\"40\">" + feedback.getGrade() + "</td>");
                                 if (curUser.equals(pageCourse.getTutor()) || curUser.isAdmin()) {
                                     out.print("<td width=\"40\">");
-                                    out.print("<a class=\"btn btn-outline-primary\"\" href=\"/course/" + pageCourse.getId() + "/edit/"+ user.getId() +"\" role=\"button\">" + bundle.getString("common.edit") + " " + bundle.getString("common.feedback") + "</a>");
-                                    out.print("<form action=\"/course/"+ pageCourse.getId() + "/deletefeedback\" method=\"POST\">\n" +
+                                    out.print("<a class=\"btn btn-outline-primary\" href=\"/course/" + pageCourse.getId() + "/editFeedback/"+ user.getId() +"\" role=\"button\">" + bundle.getString("common.edit") + " " + bundle.getString("common.feedback") + "</a>");
+                                    out.print("<form action=\"/course/"+ pageCourse.getId() + "/deleteFeedback\" method=\"POST\">\n" +
                                         "\t<button type=\"submit\" class=\"btn btn-outline-primary\">" + bundle.getString("common.delete") + " " +bundle.getString("common.student") + " " + bundle.getString("common.feedback") + "</button>\n" +
                                         "<input name=\"userId\" type=\"hidden\" value=\""+ user.getId() +"\">" +
                                         "</form>");
@@ -159,21 +162,23 @@
                             }else{
                                 if (curUser.equals(pageCourse.getTutor())) {
                                     out.print("<td width=\"40\">");
-                                    out.print("<a class=\"btn btn-outline-primary\"\" href=\"/course/" + pageCourse.getId() + "/add/"+ user.getId() +"\" role=\"button\">" + bundle.getString("common.add") + " " + bundle.getString("common.feedback") + "</a>");
+                                    out.print("<a class=\"btn btn-outline-primary\" href=\"/course/" + pageCourse.getId() + "/createFeedback/"+ user.getId() +"\" role=\"button\">" + bundle.getString("common.add") + " " + bundle.getString("common.feedback") + "</a>");
                                     out.print("</td>");
                                 }
                             }
                             if(curUser.isAdmin()){
+                                 out.print("<td width=\"40\">");
                                 out.print("<form action=\"/course/"+ pageCourse.getId() + "/delete\" method=\"POST\">\n" +
                                         "\t<button type=\"submit\" class=\"btn btn-outline-primary\">" + bundle.getString("common.delete") + " " + bundle.getString("common.student") + " "+ bundle.getString("common.from") + " " + bundle.getString("common.course") + "</button>\n" +
                                         "<input name=\"userId\" type=\"hidden\" value=\""+ user.getId() +"\">" +
                                         "</form>");
+                                out.print("</td>");
                             }
 
                         } else{
                             if (curUser.isAdmin()) {
                                     out.print("<td width=\"40\">");
-                                    out.print("<a class=\"btn btn-outline-primary\"\" href=\"/user/" + user.getId() + "/edit\" role=\"button\">" + bundle.getString("common.edit") + " " + bundle.getString("common.user") + "</a>");
+                                    out.print("<a class=\"btn btn-outline-primary\" href=\"/user/" + user.getId() + "/edit\" role=\"button\">" + bundle.getString("common.edit") + " " + bundle.getString("common.user") + "</a>");
                                     out.print("<form action=\"/user/"+ user.getId() + "/delete\" method=\"POST\">\n" +
                                         "\t<button type=\"submit\" class=\"btn btn-outline-primary\">" + bundle.getString("common.delete") + " " + bundle.getString("common.user") + "</button>\n" +
                                         "</form>");
@@ -189,22 +194,29 @@
         %>
     </table>
 </div>
-<div class="pag">
-    <nav aria-label="Page navigation example">
-        <ul class="pagination">
-            <%
-                if (curPageNumber > 1) {
-                    out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"/course?offset=" + (offset - Common.limit) + "\">" + bundle.getString("list.previous") + "</a></li>");
-                }
-            %>
-            <li class="page-item"><a class="page-link"
-                                     href="#"><% out.print(curPageNumber + " " + bundle.getString("common.of") + " " + countPages); %></a>
-            </li>
-            <%
-                if (curPageNumber < countPages) {
-                    out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"/course?offset=" + (offset + Common.limit) + "\">" + bundle.getString("list.next") + "</a></li>");
-                }
-            %>
-        </ul>
-    </nav>
-</div>
+
+
+<%
+    if(countPages >1) {
+        out.println("<div class=\"pag\">\n" +
+                "    <nav aria-label=\"Page navigation example\">\n" +
+                "        <ul class=\"pagination\">");
+
+        if (curPageNumber > 1) {
+            out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"/course?offset=" + (offset - Common.limit) + "\">" + bundle.getString("list.previous") + "</a></li>");
+        }
+        out.println("<li class=\"page-item\"><a class=\"page-link\"\n" +
+                "                                     href=\"#\">");
+        out.print(curPageNumber + " " + bundle.getString("common.of") + " " + countPages + "\n" +
+                "             </a>\n" +
+                "            </li>");
+
+        if (curPageNumber < countPages) {
+            out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"/course?offset=" + (offset + Common.limit) + "\">" + bundle.getString("list.next") + "</a></li>");
+        }
+
+        out.println("       </ul>\n" +
+                "    </nav>\n" +
+                "</div>");
+    }
+%>
