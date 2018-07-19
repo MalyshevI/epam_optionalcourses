@@ -25,7 +25,7 @@ public class UserService {
     }
 
     public static boolean editUser(User user){
-        CommonDao.userDao.deleteUser(user);
+        return CommonDao.userDao.updateUser(user);
     }
 
 

@@ -3,6 +3,9 @@ package com.epam.lab.optional_courses.controller;
 import com.epam.lab.optional_courses.entity.Course;
 import com.epam.lab.optional_courses.entity.Feedback;
 import com.epam.lab.optional_courses.entity.User;
+import com.epam.lab.optional_courses.service.RegistrationService;
+import com.epam.lab.optional_courses.service.SecurityService;
+import com.epam.lab.optional_courses.service.UserService;
 import com.epam.lab.optional_courses.service.components.EntryKV;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -43,6 +46,7 @@ public class UserController extends HttpServlet {
         Locale locale = (Locale)request.getSession(false).getAttribute("locale");
 */
         //Locale locale = (Locale)request.getSession(false).getAttribute("locale");
+
         Locale locale = Locale.US;
         ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
         User curUser = getUserById("41");
@@ -163,7 +167,7 @@ public class UserController extends HttpServlet {
                                 entries.add(new EntryKV("common.name",curUser.getFirstName()));
                                 entries.add(new EntryKV("common.lastname",curUser.getLastName()));
                                 entries.add(new EntryKV("common.email",curUser.getEmail()));
-                                entries.add(new EntryKV("common.password",""));
+                                entries.add(new EntryKV("common.password","*****"));
 
                                 request.setAttribute("locale", locale);
                                 request.setAttribute("entryList",entries);
@@ -236,8 +240,164 @@ public class UserController extends HttpServlet {
             throws ServletException, IOException {
 
 
+        //получаем текущего юзера
+        User curUser = getUserById("41");// (User) request.getSession(false).getAttribute("user");
+        if (curUser == null) {
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
+            requestDispatcher.forward(request, response);
+        }
 
-        response.getWriter().println("Hello World!");
+        Locale locale = Locale.US;//  (Locale) request.getSession(false).getAttribute("locale");
+        request.setAttribute("locale", locale);
+
+        String pathInfo = request.getPathInfo();
+
+        if (pathInfo != null) {
+            String[] splitedPath = pathInfo.toLowerCase().split("/");
+
+
+            if (splitedPath.length == 2){
+
+                String userName = null;
+                String userLastname = null;
+                String userEmail = null;
+                String userPassword = null;
+
+                String userIdStr = null;
+
+                switch (splitedPath[1]){
+                    case "delete":
+
+                        userIdStr = request.getParameter("common.id");
+
+                        if(userIdStr != null){
+                            User givenUser = getUserById(userIdStr);
+
+                        }
+                        if (Integer.parseInt(request.getParameter("common.id")) == curUser.getId() || curUser.isAdmin()){
+
+
+                            User user = new User(userName,userLastname,userEmail,userPassword);
+                            UserService.editUser(user);
+                        } else{
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        }
+
+
+
+                        break;
+
+                    case "edit":
+
+                        if (Integer.parseInt(request.getParameter("common.id")) == curUser.getId() || curUser.isAdmin()){
+                            userName = request.getParameter("common.name");
+                            userLastname = request.getParameter("common.lastname");
+                            userEmail = request.getParameter("common.email");
+                            userPassword = request.getParameter("common.password");
+
+                            User user = new User(userName,userLastname,userEmail,userPassword);
+                            UserService.editUser(user);
+                    } else{
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        }
+
+
+
+                        userName = request.getParameter("common.name");
+                        userLastname = request.getParameter("common.lastname");
+                        userEmail = request.getParameter("common.email");
+                        userPassword = request.getParameter("common.password");
+
+
+
+                        if (userIdStr != null) {
+                            User givenUser = getUserById(userIdStr);
+                            if (givenUser != null) {
+                                Feedback feedback = getFeedbackByUserAndCourse(givenUser, course);
+                                if(feedback!= null){
+                                    if(curUser.isAdmin() || curUser.equals(course.getTutor())){
+                                        if (deleteFeedback(feedback)) {
+                                            answer = "common.feedbackDeleted";
+                                        } else {
+                                            answer = "common.feedbackDeletedFail";
+                                        }
+                                        response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
+                                    }else {
+                                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                    }
+                                }
+                            }
+                        }
+                        break;
+
+
+
+                }
+            }
+
+
+            if(course!=null) {
+                String userIdStr = null;
+                String answer = null;
+                String symbol = (request.getHeader("referer").contains("?")?"&":"?");
+                System.out.println(symbol);
+                switch (splitedPath[2]) {
+                    case "delete":
+                        userIdStr = request.getParameter("userId");
+                        if (userIdStr != null) {
+                            //delete user from course
+                            User givenUser = getUserById(userIdStr);
+                            if (givenUser != null) {
+                                if (curUser.isAdmin() || givenUser.equals(curUser)) {
+                                    if (leaveCourse(course, givenUser)) {
+                                        answer = "common.userLeftCourse";
+                                    } else {
+                                        answer = "common.userLeftCourseFail";
+                                    }
+                                    response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
+                                } else {
+                                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                }
+                            }
+                        } else {
+                            //delete course
+                            if (curUser.isAdmin()) {
+                                if (deleteCourse(course)) {
+                                    answer = "common.courseDeleted";
+                                } else {
+                                    answer = "common.courseDeletedFail";
+                                }
+                                response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
+                            }else {
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                            }
+                        }
+                        break;
+                    case "deletefeedback":
+                        userIdStr = request.getParameter("userId");
+                        if (userIdStr != null) {
+                            User givenUser = getUserById(userIdStr);
+                            if (givenUser != null) {
+                                Feedback feedback = getFeedbackByUserAndCourse(givenUser, course);
+                                if(feedback!= null){
+                                    if(curUser.isAdmin() || curUser.equals(course.getTutor())){
+                                        if (deleteFeedback(feedback)) {
+                                            answer = "common.feedbackDeleted";
+                                        } else {
+                                            answer = "common.feedbackDeletedFail";
+                                        }
+                                        response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
+                                    }else {
+                                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+        //response.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 
     @Override
