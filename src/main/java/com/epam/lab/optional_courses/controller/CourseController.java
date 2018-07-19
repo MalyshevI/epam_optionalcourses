@@ -150,8 +150,8 @@ public class CourseController extends HttpServlet {
                             } else {
                                 response.sendError(HttpServletResponse.SC_FORBIDDEN);
                             }
-                        }
-                    }
+                        }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
+                    }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     break;
                 case 4:
@@ -192,7 +192,7 @@ public class CourseController extends HttpServlet {
                                             requestDispatcher.forward(request, response);
                                         } else {
                                             response.sendError(HttpServletResponse.SC_FORBIDDEN);
-                                        }
+                                        }{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
                                     }
                                     break;
                                 case "createfeedback":
@@ -209,12 +209,12 @@ public class CourseController extends HttpServlet {
                                         } else {
                                             response.sendError(HttpServletResponse.SC_FORBIDDEN);
                                         }
-                                    }
+                                    }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
                                     break;
                             }
-                        }
-                    }
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
+                    }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
+
                     break;
                 default:
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -346,9 +346,9 @@ public class CourseController extends HttpServlet {
                                                 } else {
                                                     response.sendError(HttpServletResponse.SC_FORBIDDEN);
                                                 }
-                                            }
-                                        }
-                                    }
+                                            }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
+                                        }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
+                                    }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
                                     break;
 
                                 case "apply":
@@ -412,8 +412,6 @@ public class CourseController extends HttpServlet {
                                         answer = "course.invalidStartDate";
                                         response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                                     }
-
-
                                     break;
                             }
                             break;
@@ -473,10 +471,9 @@ public class CourseController extends HttpServlet {
                         }
                         break;
                     }
-                }
-            }
-        }
-        //response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
+            }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
+        }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
     }
 
     @Override
