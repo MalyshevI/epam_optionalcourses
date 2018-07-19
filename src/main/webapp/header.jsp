@@ -17,7 +17,7 @@
     if(title!=null) {
         out.print(bundle.getString((String) request.getAttribute("title")));
     }else{
-        out.print(request.getAttribute("titleWithName"));
+        out.print(request.getAttribute("titleWithName")); //titleWithName
     }
 %></title>
 <!-- connect bootstrap -->
