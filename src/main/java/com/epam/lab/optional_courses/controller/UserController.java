@@ -243,7 +243,7 @@ public class UserController extends HttpServlet {
                                 request.setAttribute("offset", offset);
 
                                 //засовываем title
-                                request.setAttribute("titlewithname", "title.allUsers");
+                                request.setAttribute("title", "title.allUsers"); //titleWithName
 
                                 //засовываем сущность
                                 request.setAttribute("entityType", Common.EntityType.USER);
