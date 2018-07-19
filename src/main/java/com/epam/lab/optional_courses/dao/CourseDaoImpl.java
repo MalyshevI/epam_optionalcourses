@@ -91,8 +91,8 @@ public class CourseDaoImpl implements CourseDao {
                 resultCourse = new Course();
                 resultCourse.setId(id);
                 resultCourse.setCourseName(resultSet.getString("course_name"));
-                resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
-                resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
+                resultCourse.setStartDate(resultSet.getDate("start_date").toLocalDate());
+                resultCourse.setFinishDate(resultSet.getDate("finish_date").toLocalDate());
                 resultCourse.setTutor(CommonDao.userDao.getUserById(resultSet.getInt("tutor_id")));
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
             } else {
@@ -135,8 +135,8 @@ public class CourseDaoImpl implements CourseDao {
                 Course resultCourse = new Course();
                 resultCourse.setId(resultSet.getInt("course_id"));
                 resultCourse.setCourseName(resultSet.getString("course_name"));
-                resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
-                resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
+                resultCourse.setStartDate(resultSet.getDate("start_date").toLocalDate());
+                resultCourse.setFinishDate(resultSet.getDate("finish_date").toLocalDate());
                 resultCourse.setTutor(CommonDao.userDao.getUserById(resultSet.getInt("tutor_id")));
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
 
@@ -180,8 +180,8 @@ public class CourseDaoImpl implements CourseDao {
                 Course resultCourse = new Course();
                 resultCourse.setId(resultSet.getInt("course_id"));
                 resultCourse.setCourseName(resultSet.getString("course_name"));
-                resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
-                resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
+                resultCourse.setStartDate(resultSet.getDate("start_date").toLocalDate());
+                resultCourse.setFinishDate(resultSet.getDate("finish_date").toLocalDate());
                 resultCourse.setTutor(tutor);
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
 
@@ -226,8 +226,8 @@ public class CourseDaoImpl implements CourseDao {
                 Course resultCourse = new Course();
                 resultCourse.setId(resultSet.getInt("course_id"));
                 resultCourse.setCourseName(resultSet.getString("course_name"));
-                resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
-                resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
+                resultCourse.setStartDate(resultSet.getDate("start_date").toLocalDate());
+                resultCourse.setFinishDate(resultSet.getDate("finish_date").toLocalDate());
                 resultCourse.setTutor(CommonDao.userDao.getUserById(resultSet.getInt("tutor_id")));
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
 
@@ -260,8 +260,8 @@ public class CourseDaoImpl implements CourseDao {
             statement = connection.prepareStatement(ADD_COURSE, Statement.RETURN_GENERATED_KEYS);
 
             statement.setString(1, course.getCourseName());
-            statement.setDate(2, new java.sql.Date(course.getStartDate().getTime()));
-            statement.setDate(3, new java.sql.Date(course.getFinishDate().getTime()));
+            statement.setDate(2, Date.valueOf(course.getStartDate()));
+            statement.setDate(3, Date.valueOf(course.getFinishDate()));
             statement.setInt(4, course.getTutor().getId());
             statement.setInt(5, course.getCapacity());
 
@@ -326,8 +326,8 @@ public class CourseDaoImpl implements CourseDao {
             statement = connection.prepareStatement(UPDATE);
 
             statement.setString(1, course.getCourseName());
-            statement.setDate(2, new java.sql.Date(course.getStartDate().getTime()));
-            statement.setDate(3, new java.sql.Date(course.getFinishDate().getTime()));
+            statement.setDate(2, Date.valueOf(course.getStartDate()));
+            statement.setDate(3, Date.valueOf(course.getFinishDate()));
             statement.setInt(4, course.getTutor().getId());
             statement.setInt(5, course.getCapacity());
             statement.setInt(6, course.getId());

@@ -1,12 +1,17 @@
 package com.epam.lab.optional_courses.service;
 
+import com.epam.lab.optional_courses.controller.Common;
 import com.epam.lab.optional_courses.dao.*;
 import com.epam.lab.optional_courses.entity.Course;
 import com.epam.lab.optional_courses.entity.Feedback;
 import com.epam.lab.optional_courses.entity.User;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import static jdk.nashorn.internal.runtime.regexp.joni.Syntax.Java;
 
 public class CourseService {
 
@@ -70,5 +75,30 @@ public class CourseService {
 
     public static long countUsersOnCourse(Course course){
         return CommonDao.courseDao.countUsersOnCourse(course);
+    }
+
+    public static boolean enrollUserOnCourse(Course course, User user){
+        return CommonDao.courseDao.enrollUserOnCourse(course, user);
+    }
+
+    public static LocalDate dateFromStr(String date){
+        String[] splittedDate = date.split("-");
+        LocalDate result = null;
+        if(splittedDate.length==3){
+            try {
+                result = LocalDate.of(Integer.parseInt(splittedDate[0]), Integer.parseInt(splittedDate[1]), Integer.parseInt(splittedDate[2]));
+            }catch (NumberFormatException e){
+
+            }
+        }
+        return result;
+    }
+
+    public static boolean addCourse(Course course){
+        return CommonDao.courseDao.addCourse(course);
+    }
+
+    public static boolean editCourse(Course course){
+        return CommonDao.courseDao.updateCourse(course);
     }
 }

@@ -30,4 +30,12 @@ public class FeedbackService {
     public static boolean deleteFeedback(Feedback feedback){
         return CommonDao.feedbackDao.deleteFeedback(feedback);
     }
+
+    public static boolean addFeedback(Feedback feedback) {
+        return CommonDao.feedbackDao.addFeedback(feedback);
+    }
+
+    public static boolean editFeedback(Feedback feedback){
+        return CommonDao.feedbackDao.updateFeedback(feedback);
+    }
 }

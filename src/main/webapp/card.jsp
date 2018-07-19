@@ -7,6 +7,7 @@
 
 <%
     Locale locale = (Locale) request.getAttribute("locale");
+    locale = Locale.US;
     ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
     List<EntryKV> fields = (List<EntryKV>) request.getAttribute("entryList");
 %>

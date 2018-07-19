@@ -5,7 +5,8 @@
 <%@ page import="com.epam.lab.optional_courses.service.components.EntryKV" %>
 
 <%
-    Locale locale = (Locale) request.getAttribute("Locale");
+    Locale locale = (Locale) request.getAttribute("locale");
+    locale = Locale.US;
     ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
     List<EntryKV> fields = (List<EntryKV>) request.getAttribute("entryList");
 %>
@@ -32,7 +33,7 @@
                     for (EntryKV field:fields) {
                         out.println("<dl class=\"row\">");
                         out.println("<dt class=\"col-sm-3\">" + bundle.getString(field.getName())+"</dt>");
-                        out.println("<dt class=\"col-sm-9\"><input class=\"form-control\" placeholder=\""+field.getValue()+"\"</dt>");
+                        out.println("<dt class=\"col-sm-9\"><input class=\"form-control\" name=\"" + field.getName() + "\" value=\""+field.getValue()+"\"></dt>");
                         out.println("</dl>");
                     }
 

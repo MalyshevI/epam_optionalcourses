@@ -17,14 +17,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import static com.epam.lab.optional_courses.service.CourseService.*;
-import static com.epam.lab.optional_courses.service.FeedbackService.deleteFeedback;
-import static com.epam.lab.optional_courses.service.FeedbackService.getFeedbackForUsersOnCourse;
+import static com.epam.lab.optional_courses.service.FeedbackService.*;
 
 @WebServlet(loadOnStartup = 1)
 public class CourseController extends HttpServlet {
@@ -40,7 +40,7 @@ public class CourseController extends HttpServlet {
 //            requestDispatcher.forward(request, response);
 //        }
         //Locale locale = (Locale)request.getSession().getAttribute("locale");
-        User curUser = getUserById("41"); //current logined user
+        User curUser = getUserById("40"); //current logined user
         //request.setAttribute("locale", locale);
         Locale locale = Locale.US;
         request.setAttribute("locale", locale);
@@ -74,8 +74,6 @@ public class CourseController extends HttpServlet {
             requestDispatcher.forward(request, response);
         } else {
             String[] splitedPath = pathInfo.toLowerCase().split("/");
-            System.out.println(pathInfo);
-            System.out.println(splitedPath.length);
             Course course;
             switch (splitedPath.length) {
                 case 0:
@@ -96,15 +94,19 @@ public class CourseController extends HttpServlet {
                     break;
                 case 2:
                     if (splitedPath[1].equals("add")) {
-                        entries.add(new EntryKV("common.courseName",""));
-                        entries.add(new EntryKV("course.startDate",""));
-                        entries.add(new EntryKV("course.finishDate",""));
-                        entries.add(new EntryKV("common.tutor",""));
-                        entries.add(new EntryKV("course.capacity",""));
-                        request.setAttribute("title", "title.addCourse");
-                        request.setAttribute("entryList", entries);
-                        requestDispatcher = request.getRequestDispatcher("/edit.jsp");
-                        requestDispatcher.forward(request, response);
+                        if (curUser.isAdmin()) {
+                            entries.add(new EntryKV("common.courseName", ""));
+                            entries.add(new EntryKV("course.startDate", ""));
+                            entries.add(new EntryKV("course.finishDate", ""));
+                            entries.add(new EntryKV("common.tutor", ""));
+                            entries.add(new EntryKV("course.capacity", ""));
+                            request.setAttribute("title", "title.addCourse");
+                            request.setAttribute("entryList", entries);
+                            requestDispatcher = request.getRequestDispatcher("/edit.jsp");                  //BUTTONS ADD!
+                            requestDispatcher.forward(request, response);
+                        } else {
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        }
                     }
                     course = getCourseById(splitedPath[1]);
                     if (course != null) {
@@ -116,14 +118,15 @@ public class CourseController extends HttpServlet {
                         request.setAttribute("feedbackForUsersOnCourse", getFeedbackForUsersOnCourse(usersOnCourse, course));
                         request.setAttribute("title", "title.courseCard");
 
-                        entries.add(new EntryKV("common.courseName",course.getCourseName()));
-                        entries.add(new EntryKV("course.startDate",course.getStartDate().toString()));
-                        entries.add(new EntryKV("course.finishDate",course.getFinishDate().toString()));
-                        entries.add(new EntryKV("common.tutor", new Integer(course.getTutor().getId()).toString()));
-                        entries.add(new EntryKV("course.capacity",new Integer(course.getCapacity()).toString()));
+                        entries.add(new EntryKV("common.courseName", course.getCourseName()));
+                        entries.add(new EntryKV("course.startDate", course.getStartDate().toString()));
+                        entries.add(new EntryKV("course.finishDate", course.getFinishDate().toString()));
+                        entries.add(new EntryKV("common.tutor", Integer.toString(course.getTutor().getId())));
+                        entries.add(new EntryKV("course.capacity", Integer.toString(course.getCapacity())));
                         request.setAttribute("entryList", entries);
+                        request.setAttribute("titleWithName", course.getCourseName());
                         requestDispatcher = request.getRequestDispatcher("/card.jsp");
-                        requestDispatcher.forward(request,response);
+                        requestDispatcher.forward(request, response);
 
                     } else {
                         response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -134,7 +137,16 @@ public class CourseController extends HttpServlet {
                         course = getCourseById(splitedPath[1]);
                         if (course != null) {
                             if (curUser.isAdmin()) {
-                                // show edit course
+                                entries.add(new EntryKV("common.courseName", course.getCourseName()));
+                                entries.add(new EntryKV("course.startDate", course.getStartDate().toString()));
+                                entries.add(new EntryKV("course.finishDate", course.getFinishDate().toString()));
+                                entries.add(new EntryKV("common.tutor", Integer.toString(course.getTutor().getId())));
+                                entries.add(new EntryKV("course.capacity", Integer.toString(course.getCapacity())));
+                                request.setAttribute("title", "title.editCourse");
+                                request.setAttribute("entryList", entries);
+                                request.setAttribute("pageCourse", course);
+                                requestDispatcher = request.getRequestDispatcher("/edit.jsp");                  //BUTTONS EDIT!
+                                requestDispatcher.forward(request, response);
                             } else {
                                 response.sendError(HttpServletResponse.SC_FORBIDDEN);
                             }
@@ -146,15 +158,21 @@ public class CourseController extends HttpServlet {
                     course = getCourseById(splitedPath[1]);
                     if (course != null) {
                         User givenUser = getUserById(splitedPath[3]);
-                        if (givenUser != null) {
+                        if (givenUser != null && isUserOnCourse(givenUser, course)) {
                             Feedback feedback = getFeedbackByUserAndCourse(givenUser, course);
                             switch (splitedPath[2]) {
                                 case "getfeedback":
                                     if (feedback != null) {
-                                        if (curUser.equals(givenUser)) {
-                                            // SHOW FEEDBACK TO USER
-                                        } else if (curUser.equals(course.getTutor()) || curUser.isAdmin()) {
-                                            // SHOW FEEDBACK TO TUTOR
+                                        if (curUser.equals(givenUser) || curUser.equals(course.getTutor()) || curUser.isAdmin()) {
+                                            entries.add(new EntryKV("common.student", givenUser.getFirstName() + givenUser.getLastName()));
+                                            entries.add(new EntryKV("common.course", course.getCourseName()));
+                                            entries.add(new EntryKV("feedback.grade", Integer.toString(feedback.getGrade())));
+                                            entries.add(new EntryKV("feedback.feedbackBody", feedback.getFeedbackBody()));
+                                            request.setAttribute("title", "title.feedback");
+                                            request.setAttribute("entryList", entries);
+                                            request.setAttribute("pageFeedback", feedback);
+                                            requestDispatcher = request.getRequestDispatcher("/feedback.jsp");
+                                            requestDispatcher.forward(request, response);
                                         } else {
                                             response.sendError(HttpServletResponse.SC_FORBIDDEN);
                                         }
@@ -163,17 +181,34 @@ public class CourseController extends HttpServlet {
                                 case "editfeedback":
                                     if (feedback != null) {
                                         if (curUser.equals(course.getTutor()) || curUser.isAdmin()) {
-                                            // SHOW FEEDBACK TO TUTOR EDIT
+                                            entries.add(new EntryKV("common.student", givenUser.getFirstName() + givenUser.getLastName()));
+                                            entries.add(new EntryKV("common.course", course.getCourseName()));
+                                            request.setAttribute("grade", feedback.getGrade());
+                                            request.setAttribute("feedbackBody", feedback.getFeedbackBody());
+                                            request.setAttribute("title", "title.editFeedback");
+                                            request.setAttribute("entryList", entries);
+                                            request.setAttribute("pageFeedback", feedback);
+                                            requestDispatcher = request.getRequestDispatcher("/editFeedback.jsp");              //BUTTONS@!!
+                                            requestDispatcher.forward(request, response);
                                         } else {
                                             response.sendError(HttpServletResponse.SC_FORBIDDEN);
                                         }
                                     }
                                     break;
                                 case "createfeedback":
-                                    if (curUser.equals(course.getTutor()) || curUser.isAdmin()) {
-                                        // SHOW FEEDBACK TO TUTOR CREATE
-                                    } else {
-                                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                    if (feedback == null) {
+                                        if (curUser.equals(course.getTutor()) || curUser.isAdmin()) {
+                                            entries.add(new EntryKV("common.student", givenUser.getFirstName() + givenUser.getLastName()));
+                                            entries.add(new EntryKV("common.course", course.getCourseName()));
+                                            request.setAttribute("grade", "");
+                                            request.setAttribute("feedbackBody", "");
+                                            request.setAttribute("title", "title.createFeedback");
+                                            request.setAttribute("entryList", entries);
+                                            requestDispatcher = request.getRequestDispatcher("/editFeedback.jsp");              //BUTTONS@!!
+                                            requestDispatcher.forward(request, response);
+                                        } else {
+                                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                        }
                                     }
                                     break;
                             }
@@ -187,82 +222,257 @@ public class CourseController extends HttpServlet {
             }
         }
 
-        // response.getWriter().println("Hello World!");  PUT HTML BODY HERE
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("coursecontroller dodelete");
-        User curUser = getUserById("41");// (User) request.getSession(false).getAttribute("user");
+        //System.out.println("coursecontroller dodelete");
+        User curUser = getUserById("40");// (User) request.getSession(false).getAttribute("user");
         if (curUser == null) {
-            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher("/Login.jsp");
             requestDispatcher.forward(request, response);
         }
         Locale locale = Locale.US;//  (Locale) request.getSession(false).getAttribute("locale");
         request.setAttribute("locale", locale);
         String pathInfo = request.getPathInfo();
+        String symbol = (request.getHeader("referer").contains("?") ? "&" : "?");
+        String answer = null;
         if (pathInfo != null) {
             String[] splitedPath = pathInfo.toLowerCase().split("/");
-            Course course = getCourseById(splitedPath[1]);
-            if(course!=null) {
-                String userIdStr = null;
-                String answer = null;
-                String symbol = (request.getHeader("referer").contains("?")?"&":"?");
-                System.out.println(symbol);
-                switch (splitedPath[2]) {
-                    case "delete":
-                        userIdStr = request.getParameter("userId");
-                        if (userIdStr != null) {
-                            //delete user from course
-                            User givenUser = getUserById(userIdStr);
-                            if (givenUser != null) {
-                                if (curUser.isAdmin() || givenUser.equals(curUser)) {
-                                    if (leaveCourse(course, givenUser)) {
-                                        answer = "common.userLeftCourse";
-                                    } else {
-                                        answer = "common.userLeftCourseFail";
+            if (splitedPath.length == 2) {
+                if (splitedPath[1].equals("add")) {
+                    if (curUser.isAdmin()) {
+                        String courseName = request.getParameter("common.courseName");
+                        LocalDate startDate = dateFromStr(request.getParameter("course.startDate"));
+                        if (startDate != null) {
+                            LocalDate finishDate = dateFromStr(request.getParameter("course.finishDate"));
+                            if (finishDate != null) {
+                                String tutorId = request.getParameter("common.tutor");
+                                User tutor = getUserById(tutorId);
+                                if (tutor != null) {
+                                    String capacityStr = request.getParameter("course.capacity");
+                                    int capacity;
+                                    try {
+                                        capacity = Integer.parseInt(capacityStr);
+                                    } catch (NumberFormatException e) {
+                                        capacity = -1;
                                     }
-                                    response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
+                                    if (capacity > 0) {
+                                        Course newCourse = new Course(12, courseName, startDate, finishDate, tutor, capacity);
+                                        if (addCourse(newCourse)) {
+                                            response.sendRedirect("/course/" + newCourse.getId());
+                                        } else {
+                                            answer = "course.error";
+                                            response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                        }
+
+                                    } else {
+                                        answer = "course.invalidCapacity";
+                                        response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                    }
                                 } else {
-                                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                    answer = "course.invalidTutor";
+                                    response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                                 }
+                            } else {
+                                answer = "course.invalidFinishDate";
+                                response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                             }
                         } else {
-                            //delete course
-                            if (curUser.isAdmin()) {
-                                if (deleteCourse(course)) {
-                                    answer = "common.courseDeleted";
-                                } else {
-                                    answer = "common.courseDeletedFail";
-                                }
-                                response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
-                            }else {
-                                response.sendError(HttpServletResponse.SC_FORBIDDEN);
-                            }
+                            answer = "course.invalidStartDate";
+                            response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                         }
-                        break;
-                    case "deletefeedback":
-                        userIdStr = request.getParameter("userId");
-                        if (userIdStr != null) {
-                            User givenUser = getUserById(userIdStr);
-                            if (givenUser != null) {
-                                Feedback feedback = getFeedbackByUserAndCourse(givenUser, course);
-                                if(feedback!= null){
-                                    if(curUser.isAdmin() || curUser.equals(course.getTutor())){
-                                        if (deleteFeedback(feedback)) {
-                                            answer = "common.feedbackDeleted";
-                                        } else {
-                                            answer = "common.feedbackDeletedFail";
+
+                    } else {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    }
+                } else {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                }
+            }
+            if (splitedPath.length > 1) {
+                Course course = getCourseById(splitedPath[1]);
+                if (course != null) {
+                    String userIdStr = request.getParameter("userId");
+                    User givenUser = getUserById(userIdStr);
+                    switch (splitedPath.length) {                                     //parsing by URL length
+                        case 3:
+                            switch (splitedPath[2]) {                                //parsing by URL body
+                                case "delete":
+                                    if (userIdStr != null) {
+                                        //delete user from course
+                                        if (givenUser != null) {
+                                            if (curUser.isAdmin() || givenUser.equals(curUser)) {
+                                                if (leaveCourse(course, givenUser)) {
+                                                    answer = "common.userLeftCourse";
+                                                } else {
+                                                    answer = "common.userLeftCourseFail";
+                                                }
+                                                response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                            } else {
+                                                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                            }
                                         }
-                                        response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
-                                    }else {
-                                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                    } else {
+                                        //delete course
+                                        if (curUser.isAdmin()) {
+                                            if (deleteCourse(course)) {
+                                                answer = "common.courseDeleted";
+                                            } else {
+                                                answer = "common.courseDeletedFail";
+                                            }
+                                            response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                        } else {
+                                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                        }
                                     }
-                                }
+                                    break;
+
+                                case "deletefeedback":
+                                    //delete feedback
+                                    userIdStr = request.getParameter("userId");
+                                    if (userIdStr != null) {
+                                        if (givenUser != null) {
+                                            Feedback feedback = getFeedbackByUserAndCourse(givenUser, course);
+                                            if (feedback != null) {
+                                                if (curUser.isAdmin() || curUser.equals(course.getTutor())) {
+                                                    if (deleteFeedback(feedback)) {
+                                                        answer = "common.feedbackDeleted";
+                                                    } else {
+                                                        answer = "common.feedbackDeletedFail";
+                                                    }
+                                                    response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                                } else {
+                                                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    break;
+
+                                case "apply":
+                                    //apply user on course
+                                    if (givenUser != null) {
+                                        if (curUser.isAdmin() || givenUser.equals(curUser)) {
+                                            if (enrollUserOnCourse(course, givenUser)) {
+                                                answer = "course.userApplyCourse";
+                                            } else {
+                                                answer = "course.userApplyCourseFail";
+                                            }
+                                            response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                        } else {
+                                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                        }
+                                    }
+                                    break;
+                                case "edit":
+                                    //edit course
+                                    String courseName = request.getParameter("common.courseName");
+                                    LocalDate startDate = dateFromStr(request.getParameter("course.startDate"));
+                                    if (startDate != null) {
+                                        LocalDate finishDate = dateFromStr(request.getParameter("course.finishDate"));
+                                        if (finishDate != null) {
+                                            String tutorId = request.getParameter("common.tutor");
+                                            User tutor = getUserById(tutorId);
+                                            if (tutor != null) {
+                                                String capacityStr = request.getParameter("course.capacity");
+                                                int capacity;
+                                                try {
+                                                    capacity = Integer.parseInt(capacityStr);
+                                                } catch (NumberFormatException e) {
+                                                    capacity = -1;
+                                                }
+                                                if (capacity > 0) {
+                                                    course.setCourseName(courseName);
+                                                    course.setStartDate(startDate);
+                                                    course.setFinishDate(finishDate);
+                                                    course.setTutor(tutor);
+                                                    course.setCapacity(capacity);
+                                                    if (editCourse(course)) {
+                                                        response.sendRedirect("/course/" + course.getId());
+                                                    } else {
+                                                        answer = "course.error";
+                                                        response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                                    }
+
+                                                } else {
+                                                    answer = "course.invalidCapacity";
+                                                    response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                                }
+                                            } else {
+                                                answer = "course.invalidTutor";
+                                                response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                            }
+                                        } else {
+                                            answer = "course.invalidFinishDate";
+                                            response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                        }
+                                    } else {
+                                        answer = "course.invalidStartDate";
+                                        response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                    }
+
+
+                                    break;
+                            }
+                            break;
+
+                        case 4:
+                            givenUser = getUserById(splitedPath[3]);
+                            if (givenUser != null && isUserOnCourse(givenUser, course)) {
+                            String gradeStr = request.getParameter("grade");
+                            String feedbackBody = request.getParameter("feedbackBody");
+                            int grade;
+                            switch (splitedPath[2]) {                                //parsing by URL body
+                                case "createfeedback":
+                                    //create feedback
+                                    try {
+                                        grade = Integer.parseInt(gradeStr);
+                                    } catch (NumberFormatException e) {
+                                        grade = -1;
+                                    }
+                                    if (0 < grade && grade < 11) {
+                                        Feedback feedback = new Feedback(givenUser, course, grade, feedbackBody);
+                                        if (addFeedback(feedback)) {
+                                            response.sendRedirect("/course/" + course.getId() + "/getFeedback/" + givenUser.getId());
+                                        } else {
+                                            answer = "feedback.error";
+                                            response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                        }
+                                    } else {
+                                        answer = "feedback.invalidGrade";
+                                        response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                    }
+                                    break;
+
+                                case "editfeedback":
+                                    //edit feedback
+                                    try {
+                                        grade = Integer.parseInt(gradeStr);
+                                    } catch (NumberFormatException e) {
+                                        grade = -1;
+                                    }
+                                    if (0 < grade && grade < 11) {
+
+                                        Feedback feedback = getFeedbackByUserAndCourse(givenUser, course);
+                                        feedback.setFeedbackBody(feedbackBody);
+                                        feedback.setGrade(grade);
+                                        if (editFeedback(feedback)) {
+                                            response.sendRedirect("/course/" + course.getId() + "/getFeedback/" + givenUser.getId());
+                                        } else {
+                                            answer = "feedback.error";
+                                            response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                        }
+                                    } else {
+                                        answer = "feedback.invalidGrade";
+                                        response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                    }
+                                    break;
                             }
                         }
                         break;
+                    }
                 }
             }
         }
