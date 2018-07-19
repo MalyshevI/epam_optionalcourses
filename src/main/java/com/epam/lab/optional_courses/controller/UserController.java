@@ -106,7 +106,7 @@ public class UserController extends HttpServlet {
             request.setAttribute("entryList", entries);
 
 
-            RequestDispatcher requestDispatcher = request.getRequestDispatcher("card.jsp");
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher("/card.jsp");
             requestDispatcher.forward(request, response);
         } else {
 
@@ -168,7 +168,7 @@ public class UserController extends HttpServlet {
                     request.setAttribute("entryList", entries);
 
 
-                    requestDispatcher = request.getRequestDispatcher("card.jsp");
+                    requestDispatcher = request.getRequestDispatcher("/card.jsp");
                     requestDispatcher.forward(request, response);//  строка com/user/
 
                     break;
@@ -243,7 +243,7 @@ public class UserController extends HttpServlet {
                                 request.setAttribute("offset", offset);
 
                                 //засовываем title
-                                request.setAttribute("titleWithName", "title.allUsers");
+                                request.setAttribute("titlewithname", "title.allUsers");
 
                                 //засовываем сущность
                                 request.setAttribute("entityType", Common.EntityType.USER);
@@ -315,7 +315,7 @@ public class UserController extends HttpServlet {
                                 entries.add(new EntryKV("common.email", pageUser.getEmail()));
                                 request.setAttribute("entryList", entries);
 
-                                requestDispatcher = request.getRequestDispatcher("card.jsp");
+                                requestDispatcher = request.getRequestDispatcher("/card.jsp");
                                 requestDispatcher.forward(request, response);//
 
                             } else {
@@ -339,7 +339,7 @@ public class UserController extends HttpServlet {
         //берем юзера текущего
         User curUser = getUserById("41");// (User) request.getSession(false).getAttribute("user");
         if (curUser == null) {
-            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher("/Login.jsp");
             requestDispatcher.forward(request, response);
         }
 
