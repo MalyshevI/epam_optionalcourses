@@ -26,7 +26,7 @@ public class User {
         this.lastName = lastName;
         this.email = email;
         this.password = password;
-        this.isAdmin = isAdmin;
+        this.isAdmin = false;
     }
 
     public User(String firstName, String lastName, String email, String password, boolean isAdmin){
@@ -34,7 +34,7 @@ public class User {
         this.lastName = lastName;
         this.email = email;
         this.password = password;
-        this.isAdmin = isAdmin;
+        this.isAdmin = false;
     }
 
     public User(String firstName, String lastName, String email, String password){
@@ -89,7 +89,7 @@ public class User {
     }
 
     public void setAdmin(boolean isAdmin) {
-        this.isAdmin = isAdmin;
+        this.isAdmin = false;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.epam.lab.optional_courses.controller;
 
+import com.epam.lab.optional_courses.dao.CommonDao;
 import com.epam.lab.optional_courses.entity.Course;
 import com.epam.lab.optional_courses.entity.Feedback;
 import com.epam.lab.optional_courses.entity.User;
@@ -37,24 +38,33 @@ public class UserController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        /*User curUser = (User) request.getSession().getAttribute("user");
-
-        if(curUser==null){
-            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
-            requestDispatcher.forward(request, response);
-        }
-        Locale locale = (Locale)request.getSession(false).getAttribute("locale");
-*/
-        //Locale locale = (Locale)request.getSession(false).getAttribute("locale");
-
-        Locale locale = Locale.US;
-        ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
+//  Здесь получаем пользователя текущего из сессиии
+//        User curUser = (User) request.getSession().getAttribute("user");
+//        if(curUser==null){
+//            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
+//            requestDispatcher.forward(request, response);
+//        }
+//        Locale locale = (Locale)request.getSession(false).getAttribute("locale");
         User curUser = getUserById("41");
+        request.setAttribute("curUser", curUser);
+
+
+        //Locale locale = (Locale)request.getSession(false).getAttribute("locale");
+        Locale locale = Locale.US;
+        request.setAttribute("locale", locale);
+
+        ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
+
+        //Получаем строку адресную
         String pathInfo = request.getPathInfo();
+
+        //задаем нулевой оффсет и вытаскиваем его из строки , если есть такой параметр
         Long offset = 0L;
         String offsetStr;
 
+        //распарсиваем строку
         if (pathInfo == null) {
+            // пустая строка com/user
             offsetStr = request.getParameter("offset");
             if (offsetStr != null) {
                 try {
@@ -62,42 +72,61 @@ public class UserController extends HttpServlet {
                 } catch (NumberFormatException ignored) {
                 }
             }
-            List<Course> courseList = getCoursesByUser(curUser, Common.limit, offset);
-            List<Boolean> coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(curUser, courseList);
-            List<Feedback> feedbackForUserCourses = getFeedbackForUserCourses(courseList, curUser);
-
-            List<EntryKV> entries = new ArrayList<>();
-            entries.add(new EntryKV("common.name",curUser.getFirstName()));
-            entries.add(new EntryKV("common.lastname",curUser.getLastName()));
-            entries.add(new EntryKV("common.email",curUser.getEmail()));
-
-            request.setAttribute("title", curUser.getFirstName());
-            request.setAttribute("locale", locale);
-            request.setAttribute("curUser", curUser);
-            request.setAttribute("pageUser", curUser);
-            request.setAttribute("entryList",entries);
+            //передаем оффсет
             request.setAttribute("offset", offset);
-            request.setAttribute("list", courseList);
+
+            //засовываем title
+            request.setAttribute("titleWithName", curUser.getFirstName());
             request.setAttribute("entityType", Common.EntityType.COURSE);
+
+            //засовываем число курсов для текущего юзера
             request.setAttribute("countEntity", countCoursesByUser(curUser));
-            request.setAttribute("feedbackForUserCourses",feedbackForUserCourses);
+
+            //засовываем юзера, для которого ищем страницу, в данном случае, который зашел
+            request.setAttribute("pageUser", curUser);
+
+            //ищем список курсов для конкретного юзера
+            List<Course> courseList = getCoursesByUser(curUser, Common.limit, offset);
+            request.setAttribute("list", courseList);
+
+            //ищем конкретный список булевых значених на которые записан юзер для отображения кнопок
+            List<Boolean> coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(curUser, courseList);
             request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
+
+            //находим фидбэки для конкретного юзера и сетим их
+            List<Feedback> feedbackForUserCourses = getFeedbackForUserCourses(courseList, curUser);
+            request.setAttribute("feedbackForUserCourses", feedbackForUserCourses);
+
+
+            //находим поля юзера, которые будем выводить и добавляем их в сущность, которую будем сетить
+            List<EntryKV> entries = new ArrayList<>();
+            entries.add(new EntryKV("common.name", curUser.getFirstName()));
+            entries.add(new EntryKV("common.lastname", curUser.getLastName()));
+            entries.add(new EntryKV("common.email", curUser.getEmail()));
+            request.setAttribute("entryList", entries);
+
 
             RequestDispatcher requestDispatcher = request.getRequestDispatcher("card.jsp");
             requestDispatcher.forward(request, response);
         } else {
 
-
-            String[] splitedPath = pathInfo.toLowerCase().split("/");
-            User pageUser;
-            List<Course> courseList;
-            List<Boolean> coursesEnrolledByCurUser;
-            RequestDispatcher requestDispatcher;
+            //задаем переменные для всех скоупов
             List<Feedback> feedbackForUserCourses;
             List<EntryKV> entries;
+            List<Boolean> coursesEnrolledByCurUser;
+            List<Course> courseList;
+            List<User> userList;
+            RequestDispatcher requestDispatcher;
+            User pageUser;
+
+
+            //делим адресную стркоу на части
+            String[] splitedPath = pathInfo.toLowerCase().split("/");
+
 
             switch (splitedPath.length) {
                 case 0:
+                    // строка com/user/
                     offsetStr = request.getParameter("offset");
                     if (offsetStr != null) {
                         try {
@@ -105,29 +134,43 @@ public class UserController extends HttpServlet {
                         } catch (NumberFormatException ignored) {
                         }
                     }
-                    courseList = getCoursesByUser(curUser, Common.limit, offset);
-                    coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(curUser, courseList);
-                    feedbackForUserCourses = getFeedbackForUserCourses(courseList, curUser);
-
-                    entries = new ArrayList<>();
-                    entries.add(new EntryKV("common.name",curUser.getFirstName()));
-                    entries.add(new EntryKV("common.lastname",curUser.getLastName()));
-                    entries.add(new EntryKV("common.email",curUser.getEmail()));
-
-                    request.setAttribute("title", curUser.getFirstName());
-                    request.setAttribute("locale", locale);
-                    request.setAttribute("curUser", curUser);
-                    request.setAttribute("pageUser", curUser);
-                    request.setAttribute("entryList",entries);
+                    //передаем оффсет
                     request.setAttribute("offset", offset);
-                    request.setAttribute("list", courseList);
+
+                    //засовываем title
+                    request.setAttribute("titleWithName", curUser.getFirstName());
                     request.setAttribute("entityType", Common.EntityType.COURSE);
+
+                    //засовываем число курсов для текущего юзера
                     request.setAttribute("countEntity", countCoursesByUser(curUser));
-                    request.setAttribute("feedbackForUserCourses",feedbackForUserCourses);
+
+                    //засовываем юзера, для которого ищем страницу, в данном случае, который зашел
+                    request.setAttribute("pageUser", curUser);
+
+                    //ищем список курсов для конкретного юзера
+                    courseList = getCoursesByUser(curUser, Common.limit, offset);
+                    request.setAttribute("list", courseList);
+
+                    //ищем конкретный список булевых значених на которые записан юзер для отображения кнопок
+                    coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(curUser, courseList);
                     request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
 
-                    requestDispatcher = request.getRequestDispatcher("/card.jsp");
-                    requestDispatcher.forward(request, response);
+                    //находим фидбэки для конкретного юзера и сетим их
+                    feedbackForUserCourses = getFeedbackForUserCourses(courseList, curUser);
+                    request.setAttribute("feedbackForUserCourses", feedbackForUserCourses);
+
+
+                    //находим поля юзера, которые будем выводить и добавляем их в сущность, которую будем сетить
+                    entries = new ArrayList<>();
+                    entries.add(new EntryKV("common.name", curUser.getFirstName()));
+                    entries.add(new EntryKV("common.lastname", curUser.getLastName()));
+                    entries.add(new EntryKV("common.email", curUser.getEmail()));
+                    request.setAttribute("entryList", entries);
+
+
+                    requestDispatcher = request.getRequestDispatcher("card.jsp");
+                    requestDispatcher.forward(request, response);//  строка com/user/
+
                     break;
 
 
@@ -135,58 +178,59 @@ public class UserController extends HttpServlet {
 
                     switch (splitedPath[1]) {
                         case "add":
-                            if (curUser.isAdmin()){
-                                entries = new ArrayList<>();
-                                entries.add(new EntryKV("common.name",""));
-                                entries.add(new EntryKV("common.lastname",""));
-                                entries.add(new EntryKV("common.email",""));
-                                entries.add(new EntryKV("common.password",""));
 
-                                request.setAttribute("locale", locale);
-                                request.setAttribute("entryList",entries);
-                                request.setAttribute("title", curUser.getFirstName());
-                                request.setAttribute("curUser", curUser);
-                                request.setAttribute("pageUser", curUser);
+                            //строка com/user/add
+
+                            if (curUser.isAdmin()) {
+                                //засовываем title
+                                request.setAttribute("title", "title.addUser");
+
+                                entries = new ArrayList<>();
+                                entries.add(new EntryKV("common.name", ""));
+                                entries.add(new EntryKV("common.lastname", ""));
+                                entries.add(new EntryKV("common.email", ""));
+                                entries.add(new EntryKV("common.password", ""));
+                                request.setAttribute("entryList", entries);
 
                                 requestDispatcher = request.getRequestDispatcher("/edit.jsp");
                                 requestDispatcher.forward(request, response);
-
                             } else {
-                                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN);
                             }
                             break;
 
-                        case "delete":
-
-                            //show page delete
-                            break;
 
                         case "edit":
-                            if (curUser.isAdmin()){
-                                entries = new ArrayList<>();
-                                entries.add(new EntryKV("common.name",curUser.getFirstName()));
-                                entries.add(new EntryKV("common.lastname",curUser.getLastName()));
-                                entries.add(new EntryKV("common.email",curUser.getEmail()));
-                                entries.add(new EntryKV("common.password","*****"));
 
-                                request.setAttribute("locale", locale);
-                                request.setAttribute("entryList",entries);
-                                request.setAttribute("title", curUser.getFirstName());
-                                request.setAttribute("curUser", curUser);
-                                request.setAttribute("pageUser", curUser);
+                            //строка com/user/edit
+
+                            pageUser = getUserById(request.getParameter("userId"));
+                            if (curUser.isAdmin() || curUser.equals(pageUser)) {
+                                //title сетим
+                                request.setAttribute("title", "title.editUser");
+
+                                entries = new ArrayList<>();
+                                entries.add(new EntryKV("common.name", pageUser.getFirstName()));
+                                entries.add(new EntryKV("common.lastname", pageUser.getLastName()));
+                                entries.add(new EntryKV("common.email", pageUser.getEmail()));
+                                entries.add(new EntryKV("common.password", ""));
+                                request.setAttribute("entryList", entries);
 
                                 requestDispatcher = request.getRequestDispatcher("/edit.jsp");
                                 requestDispatcher.forward(request, response);
 
                             } else {
-                                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN);
                             }
                             break;
 
 
-                        default:
-                            pageUser = getUserById(splitedPath[1]);
-                            if (pageUser != null) {
+                        case "all":
+
+                            // строка com/user/all
+
+                            if (curUser.isAdmin()) {
+
                                 offsetStr = request.getParameter("offset");
                                 if (offsetStr != null) {
                                     try {
@@ -195,35 +239,89 @@ public class UserController extends HttpServlet {
                                     }
                                 }
 
-                                courseList = getCoursesByUser(pageUser, Common.limit, offset);
-                                coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(pageUser, courseList);
-                                feedbackForUserCourses = getFeedbackForUserCourses(courseList, pageUser);
-
-                                request.setAttribute("countEntity", countCoursesByUser(pageUser));
-                                request.setAttribute("entityType", Common.EntityType.COURSE);
-                                request.setAttribute("list", courseList);
-                                request.setAttribute("curUser", curUser);
-                                request.setAttribute("locale", locale);
-                                request.setAttribute("feedbackForUserCourses",feedbackForUserCourses);
-                                request.setAttribute("pageUser", curUser);
+                                //передаем оффсет
                                 request.setAttribute("offset", offset);
-                                request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
 
-                                //System.out.println("DATA WENT TO JSP" + new Date());
-                                entries = new ArrayList<>();
-                                entries.add(new EntryKV(bundle.getString("common.name"),curUser.getFirstName()));
-                                entries.add(new EntryKV(bundle.getString("common.lastname"),curUser.getLastName()));
-                                entries.add(new EntryKV(bundle.getString("common.email"),curUser.getEmail()));
+                                //засовываем title
+                                request.setAttribute("titleWithName", "title.allUsers");
 
-                                request.setAttribute("entryList",entries);
+                                //засовываем сущность
+                                request.setAttribute("entityType", Common.EntityType.USER);
 
-                                requestDispatcher = request.getRequestDispatcher("card.jsp");
-                                requestDispatcher.forward(request, response);
-                                break;
+                                //засовываем число юзеров
+                                request.setAttribute("countEntity", countAllUsers());
+
+                                //ищем список юзеров
+                                userList = getAllUsers(Common.limit, offset);
+                                request.setAttribute("list", userList);
+
+                                requestDispatcher = request.getRequestDispatcher("/table.jsp");
+                                requestDispatcher.forward(request, response);//  строка com/user/all
                             } else {
-                                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN);
                             }
 
+
+                            break;
+
+
+                        default:
+
+                            // либо верная строка com/user/125
+                            // либо неверная строка com/user/авп
+
+                            //проверяем есть ли такой юзер по id
+                            pageUser = getUserById(splitedPath[1]);
+                            if (pageUser != null) {
+                                //если есть:
+                                offsetStr = request.getParameter("offset");
+                                if (offsetStr != null) {
+                                    try {
+                                        offset = Long.parseLong(offsetStr);
+                                    } catch (NumberFormatException ignored) {
+                                    }
+                                }
+
+                                //передаем оффсет
+                                request.setAttribute("offset", offset);
+
+                                //засовываем title
+                                request.setAttribute("title", pageUser.getFirstName());
+                                request.setAttribute("entityType", Common.EntityType.COURSE);
+
+                                //засовываем число курсов для запрашиваемого юзера
+                                request.setAttribute("countEntity", countCoursesByUser(pageUser));
+
+                                //засовываем юзера, для которого ищем страницу
+                                request.setAttribute("pageUser", pageUser);
+
+                                //ищем список курсов для конкретного юзера
+                                courseList = getCoursesByUser(pageUser, Common.limit, offset);
+                                request.setAttribute("list", courseList);
+
+                                //ищем конкретный список булевых значених на которые записан юзер для отображения кнопок
+                                coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(pageUser, courseList);
+                                request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
+
+                                //находим фидбэки для конкретного юзера и сетим их
+                                feedbackForUserCourses = getFeedbackForUserCourses(courseList, pageUser);
+                                request.setAttribute("feedbackForUserCourses", feedbackForUserCourses);
+
+
+                                //находим поля юзера, которые будем выводить и добавляем их в сущность, которую будем сетить
+                                entries = new ArrayList<>();
+                                entries.add(new EntryKV("common.name", pageUser.getFirstName()));
+                                entries.add(new EntryKV("common.lastname", pageUser.getLastName()));
+                                entries.add(new EntryKV("common.email", pageUser.getEmail()));
+                                request.setAttribute("entryList", entries);
+
+                                requestDispatcher = request.getRequestDispatcher("card.jsp");
+                                requestDispatcher.forward(request, response);//
+
+                            } else {
+                                //если нет, то 404 еррор
+                                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                            }
                             break;
                     }
                     break;
@@ -232,172 +330,107 @@ public class UserController extends HttpServlet {
                     break;
             }
         }
-        // response.getWriter().println("Hello World!");  PUT HTML BODY HERE
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-
-        //получаем текущего юзера
+        //берем юзера текущего
         User curUser = getUserById("41");// (User) request.getSession(false).getAttribute("user");
         if (curUser == null) {
             RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
             requestDispatcher.forward(request, response);
         }
 
+        //сетим локаль
         Locale locale = Locale.US;//  (Locale) request.getSession(false).getAttribute("locale");
         request.setAttribute("locale", locale);
 
+        //парсим строку
         String pathInfo = request.getPathInfo();
 
+        //если не пустая
         if (pathInfo != null) {
+            //делим на части
             String[] splitedPath = pathInfo.toLowerCase().split("/");
+            //чекаем случаи
+
+            String userIdStr = null;
+            String answer = null;
+            String symbol = (request.getHeader("referer").contains("?") ? "&" : "?");
 
 
-            if (splitedPath.length == 2){
-
-                String userName = null;
-                String userLastname = null;
-                String userEmail = null;
-                String userPassword = null;
-
-                String userIdStr = null;
-
-                switch (splitedPath[1]){
-                    case "delete":
-
-                        userIdStr = request.getParameter("common.id");
-
-                        if(userIdStr != null){
-                            User givenUser = getUserById(userIdStr);
-
-                        }
-                        if (Integer.parseInt(request.getParameter("common.id")) == curUser.getId() || curUser.isAdmin()){
-
-
-                            User user = new User(userName,userLastname,userEmail,userPassword);
-                            UserService.editUser(user);
-                        } else{
-                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-                        }
-
-
-
-                        break;
-
-                    case "edit":
-
-                        if (Integer.parseInt(request.getParameter("common.id")) == curUser.getId() || curUser.isAdmin()){
-                            userName = request.getParameter("common.name");
-                            userLastname = request.getParameter("common.lastname");
-                            userEmail = request.getParameter("common.email");
-                            userPassword = request.getParameter("common.password");
-
-                            User user = new User(userName,userLastname,userEmail,userPassword);
-                            UserService.editUser(user);
-                    } else{
-                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-                        }
-
-
-
-                        userName = request.getParameter("common.name");
-                        userLastname = request.getParameter("common.lastname");
-                        userEmail = request.getParameter("common.email");
-                        userPassword = request.getParameter("common.password");
-
-
-
-                        if (userIdStr != null) {
-                            User givenUser = getUserById(userIdStr);
-                            if (givenUser != null) {
-                                Feedback feedback = getFeedbackByUserAndCourse(givenUser, course);
-                                if(feedback!= null){
-                                    if(curUser.isAdmin() || curUser.equals(course.getTutor())){
-                                        if (deleteFeedback(feedback)) {
-                                            answer = "common.feedbackDeleted";
-                                        } else {
-                                            answer = "common.feedbackDeletedFail";
-                                        }
-                                        response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
-                                    }else {
-                                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
-                                    }
-                                }
-                            }
-                        }
-                        break;
-
-
-
-                }
-            }
-
-
-            if(course!=null) {
-                String userIdStr = null;
-                String answer = null;
-                String symbol = (request.getHeader("referer").contains("?")?"&":"?");
-                System.out.println(symbol);
-                switch (splitedPath[2]) {
+            if (splitedPath.length == 2) {
+                switch (splitedPath[1]) {
                     case "delete":
                         userIdStr = request.getParameter("userId");
                         if (userIdStr != null) {
-                            //delete user from course
                             User givenUser = getUserById(userIdStr);
                             if (givenUser != null) {
-                                if (curUser.isAdmin() || givenUser.equals(curUser)) {
-                                    if (leaveCourse(course, givenUser)) {
-                                        answer = "common.userLeftCourse";
+                                if (curUser.isAdmin()) {
+                                    if (deleteUser(givenUser)) {
+                                        answer = "common.userDeleted";
                                     } else {
-                                        answer = "common.userLeftCourseFail";
+                                        answer = "common.userDeletedFail";
                                     }
-                                    response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
+                                    response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                } else if (givenUser.equals(curUser)) {
+                                    if (deleteUser(givenUser)) {
+                                        RequestDispatcher requestDispatcher = request.getRequestDispatcher("/Login.jsp");
+                                        requestDispatcher.forward(request, response);
+                                    } else {
+                                        answer = "common.userDeletedFail";
+                                        response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                    }
                                 } else {
                                     response.sendError(HttpServletResponse.SC_FORBIDDEN);
                                 }
                             }
-                        } else {
-                            //delete course
-                            if (curUser.isAdmin()) {
-                                if (deleteCourse(course)) {
-                                    answer = "common.courseDeleted";
-                                } else {
-                                    answer = "common.courseDeletedFail";
-                                }
-                                response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
-                            }else {
-                                response.sendError(HttpServletResponse.SC_FORBIDDEN);
-                            }
                         }
-                        break;
-                    case "deletefeedback":
-                        userIdStr = request.getParameter("userId");
-                        if (userIdStr != null) {
-                            User givenUser = getUserById(userIdStr);
-                            if (givenUser != null) {
-                                Feedback feedback = getFeedbackByUserAndCourse(givenUser, course);
-                                if(feedback!= null){
-                                    if(curUser.isAdmin() || curUser.equals(course.getTutor())){
-                                        if (deleteFeedback(feedback)) {
-                                            answer = "common.feedbackDeleted";
-                                        } else {
-                                            answer = "common.feedbackDeletedFail";
-                                        }
-                                        response.sendRedirect(request.getHeader("referer")+ symbol +"answer=" + answer);
-                                    }else {
-                                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+
+                    case "edit":
+
+
+                        if(curUser.isAdmin()){
+                            userIdStr = request.getParameter("userId");
+                            if (userIdStr != null){
+                                User givenUser = getUserById(userIdStr)){
+                                    if (givenUser != null){
+
                                     }
                                 }
                             }
+
                         }
+
+
+
+                        if (curUser.getId())
+
+
+                        User user = new User();
+
+                        user.setFirstName(request.getParameter("common.name"));
+                        user.setLastName(request.getParameter("common.lastname"));
+
+                        //проверить емэил
+                        user.setEmail(request.getParameter("common.email"));
+                        user.setPassword(request.getParameter("common.password"));
+
+
+                        user.
+                        CommonDao.userDao.updateUser()
+
+
+                        break;
+
+                    case "add":
+
                         break;
                 }
             }
         }
-        //response.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 
     @Override

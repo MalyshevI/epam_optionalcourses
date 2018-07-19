@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.epam.lab.optional_courses.service.CourseService.*;
+import static com.epam.lab.optional_courses.service.UserService.*;
 import static com.epam.lab.optional_courses.service.FeedbackService.deleteFeedback;
 import static com.epam.lab.optional_courses.service.FeedbackService.getFeedbackForUsersOnCourse;
 

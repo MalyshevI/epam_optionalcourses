@@ -24,9 +24,20 @@ public class UserService {
         }
     }
 
-    public static boolean editUser(User user){
+    public static boolean updateUser(User user){
         return CommonDao.userDao.updateUser(user);
     }
 
+    public static long countAllUsers(){
+        return CommonDao.userDao.countAllUsers();
+    }
+
+    public static List<User> getAllUsers(long limit, long offset){
+        return CommonDao.userDao.getAllUsers(limit, offset);
+    }
+
+    public static boolean deleteUser(User user){
+        return CommonDao.userDao.deleteUser(user);
+    }
 
 }
