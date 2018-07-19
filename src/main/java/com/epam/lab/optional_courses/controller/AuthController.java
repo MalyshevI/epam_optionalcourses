@@ -30,6 +30,8 @@ public class AuthController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        ResourceBundle bundle = ResourceBundle.getBundle("i18n", Locale.US);
+        request.setAttribute("title", bundle.getString("reg.title"));
         RequestDispatcher requestDispatcher = request.getRequestDispatcher("/Login.jsp");
         requestDispatcher.forward(request, response);
         System.out.println("Authcontroller doGet");
