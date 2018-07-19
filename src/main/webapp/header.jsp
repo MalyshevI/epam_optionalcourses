@@ -3,6 +3,9 @@
 
 <%
     Locale locale = (Locale) request.getSession(false).getAttribute("locale");
+    if(locale==null){
+        locale=Locale.US;
+    }
     ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
 
 %>
