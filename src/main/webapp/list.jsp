@@ -144,7 +144,7 @@
                         if(pageCourse != null){
                             out.println("<th width=\"40\" scope=\"col\">" + bundle.getString("common.grade") + "</th>");
                         }
-                        out.println("<th width=\"40\" scope=\"col\">" + "Buttons" +"</th>");
+                        out.println("<th width=\"40\" scope=\"col\">" + bundle.getString("common.buttons") +"</th>");
                         out.println("</tr>\n" +
                                 "        </thead>\n" +
                                 "        <tbody>");
