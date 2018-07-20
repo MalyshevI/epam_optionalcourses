@@ -1,3 +1,5 @@
+<%--<%@ page language="java" contentType="text/html; charset=ISO-8859-1"--%>
+         <%--pageEncoding="ISO-8859-1" session="false"%>--%>
 <%@ page import="com.epam.lab.optional_courses.controller.Common" %>
 <%@ page import="java.util.ResourceBundle" %>
 <%@ page import="java.util.Locale" %>
@@ -34,6 +36,7 @@
                         List<Course> allCourses = (List<Course>) request.getAttribute("list");
                         List<Boolean> coursesEnrolledByCurUser = null;
                         List<Feedback> feedbackForUserCourses = null;
+                        List<Long> countUsersOnCourseList = (List<Long>) request.getAttribute("countUsersOnCourseList");
                         coursesEnrolledByCurUser = (List<Boolean>) request.getAttribute("coursesEnrolledByCurUser");
                         if(pageUser!= null){
                             feedbackForUserCourses = (List<Feedback>) request.getAttribute("feedbackForUserCourses");
@@ -60,13 +63,21 @@
                         out.println("<tr>");
                         out.println("<td width=\"40\">" + (offset + i + 1) + "</td>");
                         out.println("<td width=\"40\"> <a href=\"/course/" + course.getId() + "\"> " + course.getCourseName() + " </a></td>");
-                        out.println("<td width=\"40\"> <a href=\"/user/" + course.getTutor().getId() + "\"> " + course.getTutor().getFirstName() + course.getTutor().getLastName() + " </a></td>");
+                        out.println("<td width=\"40\"> <a href=\"/user/" + course.getTutor().getId() + "\"> " + course.getTutor().getFirstName() + " " +course.getTutor().getLastName() + " </a></td>");
                         LocalDate curDate = LocalDate.now();
                         String status;
                         if (curDate.isBefore(course.getStartDate())) {
-                            status = bundle.getString("course.registrationOpen");
+                            if(countUsersOnCourseList.get(i)<course.getCapacity()){
+                                status = bundle.getString("course.registrationOpen");
+                            }else{
+                                status = bundle.getString("course.overcrowded");
+                            }
                         } else if (curDate.isBefore(course.getFinishDate())) {
-                            status = bundle.getString("course.courseGoing");
+                            if(countUsersOnCourseList.get(i)<course.getCapacity()){
+                                status = bundle.getString("course.courseGoing");
+                            }else{
+                                status = bundle.getString("course.overcrowded");
+                            }
                         } else {
                             status = bundle.getString("course.courseFinished");
                         }
@@ -94,20 +105,22 @@
                         if (!curUser.equals(course.getTutor())) {
                             if(!status.equals(bundle.getString("course.courseFinished"))){
                                 if (coursesEnrolledByCurUser.get(i)) {
-                                    if(pageUser!= null){
                                     out.print("<td width=\"40\">");
                                     out.print("<form action=\"/course/"+ course.getId() + "/delete\" method=\"POST\">\n" +
                                         "\t<button type=\"submit\" class=\"btn btn-outline-primary\">" + bundle.getString("common.leave") + " "+ bundle.getString("common.from") + " " + bundle.getString("common.course") + "</button>\n" +
                                         "<input name=\"userId\" type=\"hidden\" value=\""+ curUser.getId() +"\">" +
                                         "</form>");
                                     out.print("</td>");
-                                    }else{
-                                        out.println("<td> </td>");
-                                    }
                                 } else {
+                                    if(countUsersOnCourseList.get(i)<course.getCapacity()){
+                                        System.out.println(curUser + "ALLO, YOBA");
                                         out.print("<td width=\"40\">");
-                                        out.print("<a class=\"btn btn-outline-primary\" href=\"/course/" + course.getId() + "/apply\" role=\"button\">" + bundle.getString("common.apply") + " " + bundle.getString("common.course") +"</a>");
+                                         out.print("<form action=\"/course/"+ course.getId() + "/apply\" method=\"POST\">\n" +
+                                        "\t<button type=\"submit\" class=\"btn btn-outline-primary\">" + bundle.getString("common.apply") + " " + bundle.getString("common.course") + "</button>\n" +
+                                        "<input name=\"userId\" type=\"hidden\" value=\""+ curUser.getId() +"\">" +
+                                        "</form>");
                                         out.print("</td>");
+                                        }
                                 }
                             }
                         }
@@ -119,6 +132,7 @@
                 case USER:
                         List<User> allUsers = (List<User>) request.getAttribute("list");
                         Course pageCourse = (Course) request.getAttribute("pageCourse");
+                        System.out.println(pageCourse);
                         List<Feedback> feedbackForUsersOnCourse = null;
                         if(pageCourse != null){
                             feedbackForUsersOnCourse = (List<Feedback>) request.getAttribute("feedbackForUsersOnCourse");
@@ -141,7 +155,7 @@
                         //TABLE RECORDS
                         out.println("<tr>");
                         out.println("<td width=\"40\">" + (offset + i + 1) + "</td>");
-                        out.println("<td width=\"40\"> <a href=\"/user/" + user.getId() + "\"> " + user.getFirstName() + user.getLastName() + " </a></td>");
+                        out.println("<td width=\"40\"> <a href=\"/user/" + user.getId() + "\"> " + user.getFirstName()  + " " + user.getLastName() + " </a></td>");
                         out.println("<td width=\"40\"> <a href=\"mailto:" + user.getEmail() + "\"> " + user.getEmail() + " </a></td>");
 
                         //BUTTONS
@@ -196,6 +210,10 @@
 
 
 <%
+    if (countPages > 1) {
+        out.println("<div class=\"pag\">\n" +
+                "    <nav aria-label=\"Page navigation example\">\n" +
+                "        <ul class=\"pagination\">");
     switch (entityType) {
         case COURSE:
             if (countPages > 1) {

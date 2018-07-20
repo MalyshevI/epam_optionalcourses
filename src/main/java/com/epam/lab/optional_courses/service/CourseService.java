@@ -69,6 +69,14 @@ public class CourseService {
         return CommonDao.courseDao.countUsersOnCourse(course);
     }
 
+    public static List<Long> countUsersOnCourseList(List<Course> courseList){
+        List<Long> resultList = new ArrayList<>();
+        for (Course course: courseList) {
+            resultList.add(countUsersOnCourse(course));
+        }
+        return resultList;
+    }
+
     public static boolean enrollUserOnCourse(Course course, User user){
         return CommonDao.courseDao.enrollUserOnCourse(course, user);
     }

@@ -1,9 +1,13 @@
+<%--<%@ page language="java" contentType="text/html; charset=ISO-8859-1"--%>
+         <%--pageEncoding="ISO-8859-1" session="false"%>--%>
 <%@ page import="java.util.Locale" %>
 <%@ page import="java.util.ResourceBundle" %>
 
 <%
-    //Locale locale = (Locale) request.getSession(false).getAttribute("locale");
-    Locale locale = Locale.US;
+    Locale locale = (Locale) request.getSession(false).getAttribute("locale");
+    if(locale==null){
+        locale=Locale.US;
+    }
     ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
     String strAnswer = request.getParameter("answer");
     System.out.println(strAnswer);
