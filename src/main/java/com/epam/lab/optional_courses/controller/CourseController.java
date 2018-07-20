@@ -16,10 +16,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -33,17 +31,18 @@ public class CourseController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        //System.out.println("CONTROLLER STARTED" + new Date() );
-//        User curUser = (User) request.getSession().getAttribute("user");
-//        if(curUser==null){
-//            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
-//            requestDispatcher.forward(request, response);
-//        }
-        //Locale locale = (Locale)request.getSession().getAttribute("locale");
-        User curUser = getUserById("40"); //current logined user
-        //request.setAttribute("locale", locale);
-        Locale locale = Locale.US;
+
+        User curUser = (User) request.getSession(false).getAttribute("user");
+        if(curUser==null){
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
+            requestDispatcher.forward(request, response);
+        }
+        Locale locale = (Locale)request.getSession(false).getAttribute("locale");
+        if(locale== null){
+            locale = Locale.US;
+        }
         request.setAttribute("locale", locale);
+        //User curUser = getUserById("44"); //current logined user
         request.setAttribute("curUser", curUser);
         String pathInfo = request.getPathInfo();
         long offset = 0L;
@@ -67,7 +66,7 @@ public class CourseController extends HttpServlet {
             request.setAttribute("entityType", Common.EntityType.COURSE);
             request.setAttribute("list", allCourses);
             request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
-
+            request.setAttribute("countUsersOnCourseList",countUsersOnCourseList(allCourses));
             //System.out.println("DATA WENT TO JSP" + new Date() );
             request.setAttribute("title", "title.table");
             requestDispatcher = request.getRequestDispatcher("/table.jsp");
@@ -86,7 +85,7 @@ public class CourseController extends HttpServlet {
                     request.setAttribute("entityType", Common.EntityType.COURSE);
                     request.setAttribute("list", allCourses);
                     request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
-
+                    request.setAttribute("countUsersOnCourseList",countUsersOnCourseList(allCourses));
                     //System.out.println("DATA WENT TO JSP" + new Date() );
                     request.setAttribute("title", "title.table");
                     requestDispatcher = request.getRequestDispatcher("/table.jsp");
@@ -152,7 +151,6 @@ public class CourseController extends HttpServlet {
                             }
                         }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
                     }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     break;
                 case 4:
                     course = getCourseById(splitedPath[1]);
@@ -227,14 +225,17 @@ public class CourseController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        //System.out.println("coursecontroller dodelete");
-        User curUser = getUserById("40");// (User) request.getSession(false).getAttribute("user");
-        if (curUser == null) {
-            RequestDispatcher requestDispatcher = request.getRequestDispatcher("/Login.jsp");
+        User curUser = (User) request.getSession(false).getAttribute("user");
+        if(curUser==null){
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
             requestDispatcher.forward(request, response);
         }
-        Locale locale = Locale.US;//  (Locale) request.getSession(false).getAttribute("locale");
+        Locale locale = (Locale)request.getSession(false).getAttribute("locale");
+        if(locale== null){
+            locale = Locale.US;
+        }
         request.setAttribute("locale", locale);
+        request.setAttribute("curUser", curUser);
         String pathInfo = request.getPathInfo();
         String symbol = (request.getHeader("referer").contains("?") ? "&" : "?");
         String answer = null;
@@ -364,6 +365,8 @@ public class CourseController extends HttpServlet {
                                         } else {
                                             response.sendError(HttpServletResponse.SC_FORBIDDEN);
                                         }
+                                    }else{
+                                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
                                     }
                                     break;
                                 case "edit":

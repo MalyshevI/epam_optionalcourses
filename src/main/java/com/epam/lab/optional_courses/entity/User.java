@@ -45,6 +45,7 @@ public class User {
     }
 
     public User(User user){
+        id = user.id;
         isAdmin = user.isAdmin;
         firstName = user.firstName;
         lastName = user.lastName;
