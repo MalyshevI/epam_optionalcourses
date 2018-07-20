@@ -119,7 +119,6 @@
                 case USER:
                         List<User> allUsers = (List<User>) request.getAttribute("list");
                         Course pageCourse = (Course) request.getAttribute("pageCourse");
-                        System.out.println(pageCourse);
                         List<Feedback> feedbackForUsersOnCourse = null;
                         if(pageCourse != null){
                             feedbackForUsersOnCourse = (List<Feedback>) request.getAttribute("feedbackForUsersOnCourse");
@@ -178,7 +177,7 @@
                         } else{
                             if (curUser.isAdmin()) {
                                     out.print("<td width=\"40\">");
-                                    out.print("<a class=\"btn btn-outline-primary\" href=\"/user/" + user.getId() + "/edit\" role=\"button\">" + bundle.getString("common.edit") + " " + bundle.getString("common.user") + "</a>");
+                                    out.print("<a class=\"btn btn-outline-primary\" href=\"/user/edit?userId="+ user.getId() +"\" role=\"button\">" + bundle.getString("common.edit") + " " + bundle.getString("common.user") + "</a>");
                                     out.print("<form action=\"/user/"+ user.getId() + "/delete\" method=\"POST\">\n" +
                                         "\t<button type=\"submit\" class=\"btn btn-outline-primary\">" + bundle.getString("common.delete") + " " + bundle.getString("common.user") + "</button>\n" +
                                         "</form>");
@@ -197,26 +196,54 @@
 
 
 <%
-    if(countPages >1) {
-        out.println("<div class=\"pag\">\n" +
-                "    <nav aria-label=\"Page navigation example\">\n" +
-                "        <ul class=\"pagination\">");
+    switch (entityType) {
+        case COURSE:
+            if (countPages > 1) {
+                out.println("<div class=\"pag\">\n" +
+                        "    <nav aria-label=\"Page navigation example\">\n" +
+                        "        <ul class=\"pagination\">");
 
-        if (curPageNumber > 1) {
-            out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"/course?offset=" + (offset - Common.limit) + "\">" + bundle.getString("list.previous") + "</a></li>");
-        }
-        out.println("<li class=\"page-item\"><a class=\"page-link\"\n" +
-                "                                     href=\"#\">");
-        out.print(curPageNumber + " " + bundle.getString("common.of") + " " + countPages + "\n" +
-                "             </a>\n" +
-                "            </li>");
+                if (curPageNumber > 1) {
+                    out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"?offset=" + (offset - Common.limit) + "\">" + bundle.getString("list.previous") + "</a></li>");
+                }
+                out.println("<li class=\"page-item\"><a class=\"page-link\"\n" +
+                        "                                     href=\"#\">");
+                out.print(curPageNumber + " " + bundle.getString("common.of") + " " + countPages + "\n" +
+                        "             </a>\n" +
+                        "            </li>");
 
-        if (curPageNumber < countPages) {
-            out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"/course?offset=" + (offset + Common.limit) + "\">" + bundle.getString("list.next") + "</a></li>");
-        }
+                if (curPageNumber < countPages) {
+                    out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"?offset=" + (offset + Common.limit) + "\">" + bundle.getString("list.next") + "</a></li>");
+                }
 
-        out.println("       </ul>\n" +
-                "    </nav>\n" +
-                "</div>");
+                out.println("       </ul>\n" +
+                        "    </nav>\n" +
+                        "</div>");
+            }
+            break;
+        case USER:
+            if (countPages > 1) {
+                out.println("<div class=\"pag\">\n" +
+                        "    <nav aria-label=\"Page navigation example\">\n" +
+                        "        <ul class=\"pagination\">");
+
+                if (curPageNumber > 1) {
+                    out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"/user/all?offset=" + (offset - Common.limit) + "\">" + bundle.getString("list.previous") + "</a></li>");
+                }
+                out.println("<li class=\"page-item\"><a class=\"page-link\"\n" +
+                        "                                     href=\"#\">");
+                out.print(curPageNumber + " " + bundle.getString("common.of") + " " + countPages + "\n" +
+                        "             </a>\n" +
+                        "            </li>");
+
+                if (curPageNumber < countPages) {
+                    out.println("<li class=\"page-item\"><a class=\"page-link\" href=\"/user/all?offset=" + (offset + Common.limit) + "\">" + bundle.getString("list.next") + "</a></li>");
+                }
+
+                out.println("       </ul>\n" +
+                        "    </nav>\n" +
+                        "</div>");
+            }
+            break;
     }
 %>

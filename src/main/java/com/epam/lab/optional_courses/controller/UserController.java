@@ -1,24 +1,20 @@
 package com.epam.lab.optional_courses.controller;
 
-import com.epam.lab.optional_courses.dao.CommonDao;
 import com.epam.lab.optional_courses.entity.Course;
 import com.epam.lab.optional_courses.entity.Feedback;
 import com.epam.lab.optional_courses.entity.User;
 import com.epam.lab.optional_courses.service.RegistrationService;
 import com.epam.lab.optional_courses.service.SecurityService;
-import com.epam.lab.optional_courses.service.UserService;
 import com.epam.lab.optional_courses.service.components.EntryKV;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -178,9 +174,7 @@ public class UserController extends HttpServlet {
 
                     switch (splitedPath[1]) {
                         case "add":
-
                             //строка com/user/add
-
                             if (curUser.isAdmin()) {
                                 //засовываем title
                                 request.setAttribute("title", "title.addUser");
@@ -226,11 +220,8 @@ public class UserController extends HttpServlet {
 
 
                         case "all":
-
                             // строка com/user/all
-
                             if (curUser.isAdmin()) {
-
                                 offsetStr = request.getParameter("offset");
                                 if (offsetStr != null) {
                                     try {
@@ -238,7 +229,6 @@ public class UserController extends HttpServlet {
                                     } catch (NumberFormatException ignored) {
                                     }
                                 }
-
                                 //передаем оффсет
                                 request.setAttribute("offset", offset);
 
@@ -253,6 +243,7 @@ public class UserController extends HttpServlet {
 
                                 //ищем список юзеров
                                 userList = getAllUsers(Common.limit, offset);
+
                                 request.setAttribute("list", userList);
 
                                 requestDispatcher = request.getRequestDispatcher("/table.jsp");
@@ -260,8 +251,6 @@ public class UserController extends HttpServlet {
                             } else {
                                 response.sendError(HttpServletResponse.SC_FORBIDDEN);
                             }
-
-
                             break;
 
 
@@ -287,6 +276,7 @@ public class UserController extends HttpServlet {
 
                                 //засовываем title
                                 request.setAttribute("titleWithName", pageUser.getFirstName());
+                                //сетим ентити
                                 request.setAttribute("entityType", Common.EntityType.COURSE);
 
                                 //засовываем число курсов для запрашиваемого юзера
@@ -399,80 +389,110 @@ public class UserController extends HttpServlet {
 
                                     givenUser.setFirstName(request.getParameter("common.name"));
                                     givenUser.setLastName(request.getParameter("common.lastname"));
-                                    //проверить мэил
-                                    givenUser.setEmail(request.getParameter("common.email"));
-                                    givenUser.setPassword(request.getParameter("common.password"));
+                                    String password = request.getParameter("common.password");
+                                    String email = request.getParameter("common.email");
+
+                                    if (!email.isEmpty()) {
+                                        if (!RegistrationService.checkEmail(email)) {
+                                            password = SecurityService.hash(password);
+                                        }
+                                        givenUser.setPassword(password);
+                                        givenUser.setEmail(email);
+                                    }
+
                                     if (updateUser(givenUser)) {
-                                        answer = "common.userDeleted";
+                                        answer = "common.userEdited";
                                     } else {
-                                        answer = "common.userDeletedFail";
+                                        answer = "common.userEditedFail";
                                     }
                                     response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                                 } else if (givenUser.equals(curUser)) {
+
                                     givenUser.setFirstName(request.getParameter("common.name"));
                                     givenUser.setLastName(request.getParameter("common.lastname"));
-                                    //проверить мэил
-                                    givenUser.setEmail(request.getParameter("common.email"));
-                                    givenUser.setPassword(request.getParameter("common.password"));
+                                    String password = request.getParameter("common.password");
+                                    String email = request.getParameter("common.email");
+
+                                    if (!email.isEmpty()) {
+                                        if (!RegistrationService.checkEmail(email)) {
+                                            password = SecurityService.hash(password);
+                                        }
+                                        givenUser.setPassword(password);
+                                        givenUser.setEmail(email);
+                                    }
+
                                     if (updateUser(givenUser)) {
                                         RequestDispatcher requestDispatcher = request.getRequestDispatcher("/Login.jsp");
                                         requestDispatcher.forward(request, response);
+                                    } else {
+                                        answer = "common.userDeletedFail";
+                                        response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                                     }
                                 } else {
-                                    answer = "common.userDeletedFail";
-                                    response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
                                 }
                             } else {
-                                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                answer = "common.userAlreadyDeleted";
+                                response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                             }
+                        } else {
+                            answer = "common.userIdNull";
+                            response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                         }
 
                         break;
 
                     case "add":
-                        userIdStr = request.getParameter("userId");
-                        if (userIdStr != null) {
-                            User givenUser = getUserById(userIdStr);
-                            if (givenUser != null) {
-                                if (curUser.isAdmin()) {
+                        if (curUser.isAdmin()) {
+                            String name = request.getParameter("common.name");
+                            String lastName = request.getParameter("common.lastname");
+                            String email = request.getParameter("common.email");
+                            String password = request.getParameter("common.password");
 
-                                    givenUser.setFirstName(request.getParameter("common.name"));
-                                    givenUser.setLastName(request.getParameter("common.lastname"));
-                                    //проверить мэил
-                                    givenUser.setEmail(request.getParameter("common.email"));
-                                    givenUser.setPassword(request.getParameter("common.password"));
-                                    if (updateUser(givenUser)) {
-                                        answer = "common.userDeleted";
+                            if (!email.isEmpty() &&
+                                    !password.isEmpty() &&
+                                    !name.isEmpty() &&
+                                    !lastName.isEmpty()) {
+                                if (!RegistrationService.checkEmail(email)) {
+                                    password = SecurityService.hash(password);
+                                    if (!RegistrationService.insertUser(name, lastName, email, password)) {
+                                        answer = "common.userAdded";
                                     } else {
-                                        answer = "common.userDeletedFail";
+                                        answer = "common.userAddedFail";
                                     }
-                                    response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                                 } else {
-                                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                    answer = "user.changeEmail";
+                                    response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                                 }
+                            } else {
+                                answer = "user.invalidData";
+                                response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                             }
+                        } else {
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
                         }
-                                break;
-                            }
-                        }
+                        break;
                 }
-
             }
-
-            @Override
-            protected void doDelete (HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-                response.getWriter().println("Hello World!");
-            }
-
-            @Override
-            public void init () throws ServletException {
-                log.log(Level.INFO, "Servlet " + this.getServletName() + " has started");
-            }
-
-            @Override
-            public void destroy () {
-                log.log(Level.INFO, "Servlet " + this.getServletName() + " has stopped");
-            }
-
         }
+
+    }
+
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.getWriter().println("Hello World!");
+    }
+
+    @Override
+    public void init() throws ServletException {
+        log.log(Level.INFO, "Servlet " + this.getServletName() + " has started");
+    }
+
+    @Override
+    public void destroy() {
+        log.log(Level.INFO, "Servlet " + this.getServletName() + " has stopped");
+    }
+
+}
