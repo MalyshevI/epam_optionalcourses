@@ -31,6 +31,7 @@
 
         %></span></td>
     </form>
+    <a href="/register"><% out.print(bundle.getString("common.register")); %></a>>
 </div>
 <jsp:include page="footer.jsp"/>
 </body>

@@ -50,7 +50,7 @@
             <dt class="col-sm-3"><% out.print(bundle.getString("feedback.feedbackBody")); %></dt>
             <dt class="col-sm-9"><textarea rows="20" cols="60" class="form-control" name="feedbackBody" ><% out.print(request.getAttribute("feedbackBody")); %>  </textarea></dt>
         </dl>
-            <button type="submit" class="btn btn-primary"><% bundle.getString("common.submit"); %></button>
+            <button type="submit" class="btn btn-primary"><% out.print(bundle.getString("common.submit")); %></button>
     </form>
     </div>
 </div>

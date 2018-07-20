@@ -113,7 +113,6 @@
                                     out.print("</td>");
                                 } else {
                                     if(countUsersOnCourseList.get(i)<course.getCapacity()){
-                                        System.out.println(curUser + "ALLO, YOBA");
                                         out.print("<td width=\"40\">");
                                          out.print("<form action=\"/course/"+ course.getId() + "/apply\" method=\"POST\">\n" +
                                         "\t<button type=\"submit\" class=\"btn btn-outline-primary\">" + bundle.getString("common.apply") + " " + bundle.getString("common.course") + "</button>\n" +

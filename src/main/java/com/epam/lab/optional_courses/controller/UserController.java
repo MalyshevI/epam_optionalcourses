@@ -34,20 +34,18 @@ public class UserController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-//  Здесь получаем пользователя текущего из сессиии
-//        User curUser = (User) request.getSession().getAttribute("user");
-//        if(curUser==null){
-//            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
-//            requestDispatcher.forward(request, response);
-//        }
-//        Locale locale = (Locale)request.getSession(false).getAttribute("locale");
-        User curUser = getUserById("41");
-        request.setAttribute("curUser", curUser);
-
-
-        //Locale locale = (Locale)request.getSession(false).getAttribute("locale");
-        Locale locale = Locale.US;
+  //Здесь получаем пользователя текущего из сессиии
+        User curUser = (User) request.getSession(false).getAttribute("user");
+        if(curUser==null){
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
+            requestDispatcher.forward(request, response);
+        }
+        Locale locale = (Locale)request.getSession(false).getAttribute("locale");
+        if(locale== null){
+            locale = Locale.US;
+        }
         request.setAttribute("locale", locale);
+        request.setAttribute("curUser", curUser);
 
         ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
 
@@ -84,6 +82,10 @@ public class UserController extends HttpServlet {
             //ищем список курсов для конкретного юзера
             List<Course> courseList = getCoursesByUser(curUser, Common.limit, offset);
             request.setAttribute("list", courseList);
+
+            //Считаем пользователей записанных на курсы
+            List<Long> countUsersOnCourseList = countUsersOnCourseList(courseList);
+            request.setAttribute("countUsersOnCourseList", countUsersOnCourseList);
 
             //ищем конкретный список булевых значених на которые записан юзер для отображения кнопок
             List<Boolean> coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(curUser, courseList);
@@ -146,6 +148,10 @@ public class UserController extends HttpServlet {
                     //ищем список курсов для конкретного юзера
                     courseList = getCoursesByUser(curUser, Common.limit, offset);
                     request.setAttribute("list", courseList);
+
+                    //Считаем пользователей записанных на курсы
+                    List<Long> countUsersOnCourseList = countUsersOnCourseList(courseList);
+                    request.setAttribute("countUsersOnCourseList", countUsersOnCourseList);
 
                     //ищем конкретный список булевых значених на которые записан юзер для отображения кнопок
                     coursesEnrolledByCurUser = getCoursesEnrolledByCurUser(curUser, courseList);
@@ -326,16 +332,18 @@ public class UserController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        //берем юзера текущего
-        User curUser = getUserById("41");// (User) request.getSession(false).getAttribute("user");
-        if (curUser == null) {
-            RequestDispatcher requestDispatcher = request.getRequestDispatcher("/Login.jsp");
+        //Здесь получаем пользователя текущего из сессиии
+        User curUser = (User) request.getSession(false).getAttribute("user");
+        if(curUser==null){
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
             requestDispatcher.forward(request, response);
         }
-
-        //сетим локаль
-        Locale locale = Locale.US;//  (Locale) request.getSession(false).getAttribute("locale");
+        Locale locale = (Locale)request.getSession(false).getAttribute("locale");
+        if(locale== null){
+            locale = Locale.US;
+        }
         request.setAttribute("locale", locale);
+        request.setAttribute("curUser", curUser);
 
         //парсим строку
         String pathInfo = request.getPathInfo();
@@ -386,26 +394,33 @@ public class UserController extends HttpServlet {
                             User givenUser = getUserById(userIdStr);
                             if (givenUser != null) {
                                 if (curUser.isAdmin()) {
-
-                                    givenUser.setFirstName(request.getParameter("common.name"));
-                                    givenUser.setLastName(request.getParameter("common.lastname"));
-                                    String password = request.getParameter("common.password");
+                                    String name = request.getParameter("common.name");
+                                    String lastName = request.getParameter("common.lastname");
                                     String email = request.getParameter("common.email");
+                                    String password = request.getParameter("common.password");
 
-                                    if (!email.isEmpty()) {
+                                    if (!email.isEmpty() &&
+                                            !password.isEmpty() &&
+                                            !name.isEmpty() &&
+                                            !lastName.isEmpty()) {
                                         if (!RegistrationService.checkEmail(email)) {
                                             password = SecurityService.hash(password);
-                                        }
-                                        givenUser.setPassword(password);
-                                        givenUser.setEmail(email);
-                                    }
+                                            User updateUser = new User(name, lastName, email, password);
+                                            if (updateUser(new User(name, lastName, email, password))) {
+                                                response.sendRedirect("/user/" + updateUser.getId());
+                                            } else {
+                                                answer = "common.userEditedFail";
+                                                response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
 
-                                    if (updateUser(givenUser)) {
-                                        answer = "common.userEdited";
+                                            }
+                                        } else {
+                                            answer = "user.changeEmail";
+                                            response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                        }
                                     } else {
-                                        answer = "common.userEditedFail";
+                                        answer = "user.invalidData";
+                                        response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                                     }
-                                    response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                                 } else if (givenUser.equals(curUser)) {
 
                                     givenUser.setFirstName(request.getParameter("common.name"));
@@ -415,8 +430,8 @@ public class UserController extends HttpServlet {
 
                                     if (!email.isEmpty()) {
                                         if (!RegistrationService.checkEmail(email)) {
-                                            password = SecurityService.hash(password);
                                         }
+                                        password = SecurityService.hash(password);
                                         givenUser.setPassword(password);
                                         givenUser.setEmail(email);
                                     }

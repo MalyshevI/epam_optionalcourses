@@ -58,7 +58,7 @@ public class AuthController extends HttpServlet {
 //            System.out.println(SecurityService.getUserByCreds(email, passwordHash));
             session.setAttribute("user", user);
             session.setAttribute("locale", locale);
-//            response.sendRedirect("/WelcomeUser.jsp");  //Further redirect
+            response.sendRedirect("/user");  //Further redirect
         } else {
             System.out.println("Login -");
             request.setAttribute("ErrorMessage", bundle.getString("login.error"));

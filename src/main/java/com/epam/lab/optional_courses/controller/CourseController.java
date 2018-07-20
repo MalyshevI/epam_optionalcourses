@@ -117,6 +117,7 @@ public class CourseController extends HttpServlet {
                         request.setAttribute("pageCourse", course);
                         request.setAttribute("feedbackForUsersOnCourse", getFeedbackForUsersOnCourse(usersOnCourse, course));
                         request.setAttribute("title", "title.courseCard");
+                        request.setAttribute("isUserOnCourse", isUserOnCourse(curUser, course));
 
                         entries.add(new EntryKV("common.courseName", course.getCourseName()));
                         entries.add(new EntryKV("course.startDate", course.getStartDate().toString()));

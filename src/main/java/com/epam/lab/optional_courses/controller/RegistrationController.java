@@ -53,7 +53,8 @@ public class RegistrationController extends HttpServlet {
                 if (!RegistrationService.insertUser(name, lastName, email, password)) {
                     System.out.println("Something went wrong");
                 } else {
-                    System.out.println("User registered");
+                    log.log(Level.INFO, "User registered");
+                    response.sendRedirect("/auth");
                 }
             } else {
                 request.setAttribute("ErrorMessage", bundle.getString("reg.emailIsPresent"));

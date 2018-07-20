@@ -40,7 +40,8 @@
                     }
 
                 %>
-                <button type="submit" class="btn btn-primary"><% bundle.getString("common.submit"); %></button>
+                <button type="submit" class="btn btn-primary"><% out.print(bundle.getString("common.submit")); %></button>
+                <a class="btn btn-primary" href="<% out.print(request.getHeader("referer")); %>" role="button"><% out.print(bundle.getString("common.cancel")); %></a>
             </form>
         </div>
     </div>
