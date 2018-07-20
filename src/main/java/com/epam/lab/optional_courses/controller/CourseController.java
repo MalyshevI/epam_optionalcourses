@@ -34,12 +34,12 @@ public class CourseController extends HttpServlet {
             throws ServletException, IOException {
 
         User curUser = (User) request.getSession(false).getAttribute("user");
-        if(curUser==null){
+        if (curUser == null) {
             RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
             requestDispatcher.forward(request, response);
         }
-        Locale locale = (Locale)request.getSession(false).getAttribute("locale");
-        if(locale== null){
+        Locale locale = (Locale) request.getSession(false).getAttribute("locale");
+        if (locale == null) {
             locale = Locale.US;
         }
         request.setAttribute("locale", locale);
@@ -67,7 +67,7 @@ public class CourseController extends HttpServlet {
             request.setAttribute("entityType", Common.EntityType.COURSE);
             request.setAttribute("list", allCourses);
             request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
-            request.setAttribute("countUsersOnCourseList",countUsersOnCourseList(allCourses));
+            request.setAttribute("countUsersOnCourseList", countUsersOnCourseList(allCourses));
             //System.out.println("DATA WENT TO JSP" + new Date() );
             request.setAttribute("title", "title.table");
             requestDispatcher = request.getRequestDispatcher("/table.jsp");
@@ -86,7 +86,7 @@ public class CourseController extends HttpServlet {
                     request.setAttribute("entityType", Common.EntityType.COURSE);
                     request.setAttribute("list", allCourses);
                     request.setAttribute("coursesEnrolledByCurUser", coursesEnrolledByCurUser);
-                    request.setAttribute("countUsersOnCourseList",countUsersOnCourseList(allCourses));
+                    request.setAttribute("countUsersOnCourseList", countUsersOnCourseList(allCourses));
                     //System.out.println("DATA WENT TO JSP" + new Date() );
                     request.setAttribute("title", "title.table");
                     requestDispatcher = request.getRequestDispatcher("/table.jsp");
@@ -151,8 +151,12 @@ public class CourseController extends HttpServlet {
                             } else {
                                 response.sendError(HttpServletResponse.SC_FORBIDDEN);
                             }
-                        }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
-                    }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
+                        } else {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        }
+                    } else {
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    }
                     break;
                 case 4:
                     course = getCourseById(splitedPath[1]);
@@ -192,7 +196,10 @@ public class CourseController extends HttpServlet {
                                             requestDispatcher.forward(request, response);
                                         } else {
                                             response.sendError(HttpServletResponse.SC_FORBIDDEN);
-                                        }{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
+                                        }
+                                        {
+                                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                                        }
                                     }
                                     break;
                                 case "createfeedback":
@@ -209,11 +216,17 @@ public class CourseController extends HttpServlet {
                                         } else {
                                             response.sendError(HttpServletResponse.SC_FORBIDDEN);
                                         }
-                                    }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
+                                    } else {
+                                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                                    }
                                     break;
                             }
-                        }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
-                    }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
+                        } else {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        }
+                    } else {
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    }
 
                     break;
                 default:
@@ -228,12 +241,12 @@ public class CourseController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         User curUser = (User) request.getSession(false).getAttribute("user");
-        if(curUser==null){
+        if (curUser == null) {
             RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
             requestDispatcher.forward(request, response);
         }
-        Locale locale = (Locale)request.getSession(false).getAttribute("locale");
-        if(locale== null){
+        Locale locale = (Locale) request.getSession(false).getAttribute("locale");
+        if (locale == null) {
             locale = Locale.US;
         }
         request.setAttribute("locale", locale);
@@ -293,8 +306,7 @@ public class CourseController extends HttpServlet {
                 } else {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 }
-            }
-            if (splitedPath.length > 1) {
+            } else if (splitedPath.length > 1) {
                 Course course = getCourseById(splitedPath[1]);
                 if (course != null) {
                     String userIdStr = request.getParameter("userId");
@@ -349,9 +361,15 @@ public class CourseController extends HttpServlet {
                                                 } else {
                                                     response.sendError(HttpServletResponse.SC_FORBIDDEN);
                                                 }
-                                            }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
-                                        }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
-                                    }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
+                                            } else {
+                                                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                                            }
+                                        } else {
+                                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                                        }
+                                    } else {
+                                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                                    }
                                     break;
 
                                 case "apply":
@@ -367,7 +385,7 @@ public class CourseController extends HttpServlet {
                                         } else {
                                             response.sendError(HttpServletResponse.SC_FORBIDDEN);
                                         }
-                                    }else{
+                                    } else {
                                         response.sendError(HttpServletResponse.SC_NOT_FOUND);
                                     }
                                     break;
@@ -424,61 +442,67 @@ public class CourseController extends HttpServlet {
                         case 4:
                             givenUser = getUserById(splitedPath[3]);
                             if (givenUser != null && isUserOnCourse(givenUser, course)) {
-                            String gradeStr = request.getParameter("grade");
-                            String feedbackBody = request.getParameter("feedbackBody");
-                            int grade;
-                            switch (splitedPath[2]) {                                //parsing by URL body
-                                case "createfeedback":
-                                    //create feedback
-                                    try {
-                                        grade = Integer.parseInt(gradeStr);
-                                    } catch (NumberFormatException e) {
-                                        grade = -1;
-                                    }
-                                    if (0 < grade && grade < 11) {
-                                        Feedback feedback = new Feedback(givenUser, course, grade, feedbackBody);
-                                        if (addFeedback(feedback)) {
-                                            response.sendRedirect("/course/" + course.getId() + "/getFeedback/" + givenUser.getId());
+                                String gradeStr = request.getParameter("grade");
+                                String feedbackBody = request.getParameter("feedbackBody");
+                                int grade;
+                                switch (splitedPath[2]) {                                //parsing by URL body
+                                    case "createfeedback":
+                                        //create feedback
+                                        try {
+                                            grade = Integer.parseInt(gradeStr);
+                                        } catch (NumberFormatException e) {
+                                            grade = -1;
+                                        }
+                                        if (0 < grade && grade < 11) {
+                                            Feedback feedback = new Feedback(givenUser, course, grade, feedbackBody);
+                                            if (addFeedback(feedback)) {
+                                                response.sendRedirect("/course/" + course.getId() + "/getFeedback/" + givenUser.getId());
+                                            } else {
+                                                answer = "feedback.error";
+                                                response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                            }
                                         } else {
-                                            answer = "feedback.error";
+                                            answer = "feedback.invalidGrade";
                                             response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                                         }
-                                    } else {
-                                        answer = "feedback.invalidGrade";
-                                        response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
-                                    }
-                                    break;
+                                        break;
 
-                                case "editfeedback":
-                                    //edit feedback
-                                    try {
-                                        grade = Integer.parseInt(gradeStr);
-                                    } catch (NumberFormatException e) {
-                                        grade = -1;
-                                    }
-                                    if (0 < grade && grade < 11) {
+                                    case "editfeedback":
+                                        //edit feedback
+                                        try {
+                                            grade = Integer.parseInt(gradeStr);
+                                        } catch (NumberFormatException e) {
+                                            grade = -1;
+                                        }
+                                        if (0 < grade && grade < 11) {
 
-                                        Feedback feedback = getFeedbackByUserAndCourse(givenUser, course);
-                                        feedback.setFeedbackBody(feedbackBody);
-                                        feedback.setGrade(grade);
-                                        if (editFeedback(feedback)) {
-                                            response.sendRedirect("/course/" + course.getId() + "/getFeedback/" + givenUser.getId());
+                                            Feedback feedback = getFeedbackByUserAndCourse(givenUser, course);
+                                            feedback.setFeedbackBody(feedbackBody);
+                                            feedback.setGrade(grade);
+                                            if (editFeedback(feedback)) {
+                                                response.sendRedirect("/course/" + course.getId() + "/getFeedback/" + givenUser.getId());
+                                            } else {
+                                                answer = "feedback.error";
+                                                response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
+                                            }
                                         } else {
-                                            answer = "feedback.error";
+                                            answer = "feedback.invalidGrade";
                                             response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
                                         }
-                                    } else {
-                                        answer = "feedback.invalidGrade";
-                                        response.sendRedirect(request.getHeader("referer") + symbol + "answer=" + answer);
-                                    }
-                                    break;
+                                        break;
+                                }
                             }
-                        }
-                        break;
+                            break;
                     }
-                }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
-            }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
-        }else{response.sendError(HttpServletResponse.SC_NOT_FOUND);}
+                } else {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                }
+            } else {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+        } else {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     @Override

@@ -32,6 +32,7 @@ public class AuthController extends HttpServlet {
             throws ServletException, IOException {
         ResourceBundle bundle = ResourceBundle.getBundle("i18n", Locale.US);
         request.setAttribute("title", "title.auth");
+        response.setContentType("text/html;charset=UTF-8");
         RequestDispatcher requestDispatcher = request.getRequestDispatcher("/Login.jsp");
         requestDispatcher.forward(request, response);
         System.out.println("Authcontroller doGet");

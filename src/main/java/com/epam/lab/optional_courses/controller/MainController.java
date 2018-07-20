@@ -1,9 +1,11 @@
 package com.epam.lab.optional_courses.controller;
 
+import com.epam.lab.optional_courses.entity.User;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +20,28 @@ public class MainController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        User curUser = null;
+        try{
+            curUser = (User) request.getSession(false).getAttribute("user");
+        }catch (RuntimeException e){
+
+        }
+
+        if (curUser == null) {
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher("Login.jsp");
+            requestDispatcher.forward(request, response);
+        }
+        Locale locale = (Locale) request.getSession(false).getAttribute("locale");
+        if (locale == null) {
+            locale = Locale.US;
+        }
+
+        String url = request.getRequestURL().toString();
+        System.out.println(url);
+
+        if(url != null && url.equals("http://localhost:8080/logout")){
+            request.getSession(false).setAttribute("user", null);
+        }
 
         String loc = request.getParameter("lang");
         String referer = request.getHeader("referer");
@@ -25,7 +49,6 @@ public class MainController extends HttpServlet {
 
         HttpSession session = request.getSession(false);
         boolean flag = false;
-        Locale locale;
         if (loc == null) {
             if (session == null) {
                 response.sendRedirect("/auth");

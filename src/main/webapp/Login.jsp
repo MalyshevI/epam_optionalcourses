@@ -4,6 +4,7 @@
 <%@ page import="java.util.ResourceBundle" %><%
     Locale locale = Locale.US;
     ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
+
 %>
 
 <html>
@@ -23,13 +24,13 @@
         <input type="password"  placeholder=<% out.print(bundle.getString("common.password")); %>
                id="password" name="password" class="form-control" /> <br />
         <input type = "submit" value = <% out.print(bundle.getString("common.submit")); %> />
-        <td><span style="color:red"><%
+        <span style="color:red"><%
             String errorMSG = (String)request.getAttribute("ErrorMessage");
             if(errorMSG!=null){
                 out.print(errorMSG);
             }
 
-        %></span></td>
+        %></span>
     </form>
     <a href="/register"><% out.print(bundle.getString("common.register")); %></a>>
 </div>

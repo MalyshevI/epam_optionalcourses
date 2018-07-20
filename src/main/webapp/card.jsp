@@ -29,13 +29,7 @@
 
 <div class="content">
     <div class="topWrapper">
-        <div class="card" style="width: 18rem;">
-            <img class="card-img-top" src="<% out.print("static/images/akalji.jpg"); %>" alt="Card image cap"
-                 height="320px" width="240"/>
-            <div class="card-body">
-                <p class="card-text"><% out.print(request.getAttribute("cardText") != null ? "" : (String) request.getAttribute("cardText")); %></p>
-            </div>
-        </div>
+
         <div class="information">
             <a class="btn btn-primary" href="<% out.print(request.getHeader("referer")); %>" role="button"><% out.print(bundle.getString("common.back")); %></a>
             <a class="btn btn-primary" href="<%

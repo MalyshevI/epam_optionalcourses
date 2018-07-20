@@ -31,7 +31,7 @@
                     }
                     %>"><% out.print(bundle.getString("user.edit")); %></a>
                     <a class="dropdown-item" href="/user/all"><% out.print(bundle.getString("user.all")); %></a>
-                    <a class="dropdown-item" href="/user/logout"><% out.print(bundle.getString("user.logout")); %></a>
+                    <a class="dropdown-item" href="/logout"><% out.print(bundle.getString("user.logout")); %></a>
                 </div>
             </li>
             <li class="nav-item dropdown">
