@@ -79,4 +79,30 @@ public interface  CourseDao {
      * @return number of courses
      */
     long countCourses();
+
+    /**
+     * Return count of Courses applied by user
+     * @return number of users
+     */
+    long countCoursesByUser(User user);
+
+    /**
+     * return true if user enrolled on course
+     * @param user - given user
+     * @param course - given course
+     * @return return true if user enrolled on course
+     */
+    boolean isUserOnCourse(User user, Course course);
+
+    /**
+     * Leaving course by user
+     * @param course - given course
+     * @param user - given user
+     * @return - resutl of deleting
+     */
+    boolean leaveCourse(Course course, User user);
+
+    List<User> getUsersOnCourse(Course course, long limit, long offset);
+
+    long countUsersOnCourse(Course course);
 }

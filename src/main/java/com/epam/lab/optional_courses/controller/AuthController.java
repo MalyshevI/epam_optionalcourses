@@ -31,7 +31,8 @@ public class AuthController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         ResourceBundle bundle = ResourceBundle.getBundle("i18n", Locale.US);
-        request.setAttribute("title", bundle.getString("reg.title"));
+        request.setAttribute("title", "title.auth");
+        response.setContentType("text/html;charset=UTF-8");
         RequestDispatcher requestDispatcher = request.getRequestDispatcher("/Login.jsp");
         requestDispatcher.forward(request, response);
         System.out.println("Authcontroller doGet");
@@ -58,7 +59,7 @@ public class AuthController extends HttpServlet {
 //            System.out.println(SecurityService.getUserByCreds(email, passwordHash));
             session.setAttribute("user", user);
             session.setAttribute("locale", locale);
-//            response.sendRedirect("/WelcomeUser.jsp");  //Further redirect
+            response.sendRedirect("/user");  //Further redirect
         } else {
             System.out.println("Login -");
             request.setAttribute("ErrorMessage", bundle.getString("login.error"));

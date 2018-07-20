@@ -26,7 +26,7 @@ public class RegistrationController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         ResourceBundle bundle = ResourceBundle.getBundle("i18n", Locale.US);
-        request.setAttribute("title", bundle.getString("reg.title"));
+        request.setAttribute("title", "title.reg");
         RequestDispatcher requestDispatcher = request.getRequestDispatcher("/Registration.jsp");
         requestDispatcher.forward(request, response);
         System.out.println("Registration doGet");
@@ -53,7 +53,8 @@ public class RegistrationController extends HttpServlet {
                 if (!RegistrationService.insertUser(name, lastName, email, password)) {
                     System.out.println("Something went wrong");
                 } else {
-                    System.out.println("User registered");
+                    log.log(Level.INFO, "User registered");
+                    response.sendRedirect("/auth");
                 }
             } else {
                 request.setAttribute("ErrorMessage", bundle.getString("reg.emailIsPresent"));

@@ -35,13 +35,17 @@ public class CourseDaoImpl implements CourseDao {
     private static final String UPDATE;
     private static final String ENROLL_USER;
     private static final String COUNT_COURSES;
+    private static final String IS_USER_ON_COURSE;
+    private static final String LEAVE_COURSE;
+    private static final String GET_USERS_ON_COURSE;
+    private static final String COUNT_USERS_ON_COURSE;
+    private static final String COUNT_COURSES_BY_USER;
 
-    private UserDao userDao;
 
     static {
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream("src/main/resources/sql_request_body_Mysql.properties"));
+            properties.load(CourseDaoImpl.class.getClassLoader().getResourceAsStream("sql_request_body_Mysql.properties"));
             log.log(Level.INFO, "SQL request bodies for courses loaded successfully ");
         } catch (IOException e) {
             log.log(Level.ERROR, "Can't load SQL request bodies for courses", e);
@@ -55,6 +59,12 @@ public class CourseDaoImpl implements CourseDao {
         UPDATE = properties.getProperty("UPDATE_COURSE");
         ENROLL_USER = properties.getProperty("ENROLL_USER_ON_COURSE");
         COUNT_COURSES = properties.getProperty("COUNT_COURSES");
+        IS_USER_ON_COURSE = properties.getProperty("IS_USER_ON_COURSE");
+        LEAVE_COURSE = properties.getProperty("LEAVE_COURSE");
+        GET_USERS_ON_COURSE = properties.getProperty("GET_USERS_ON_COURSE");
+        COUNT_USERS_ON_COURSE = properties.getProperty("COUNT_USERS_ON_COURSE");
+        COUNT_COURSES_BY_USER = properties.getProperty("COUNT_COURSES_BY_USER");
+
     }
 
     /**
@@ -72,7 +82,6 @@ public class CourseDaoImpl implements CourseDao {
         try {
 
             connection = connectionPool.getConnection();
-            userDao = new UserDaoImpl();
             statement = connection.prepareStatement(GET_BY_ID);
             statement.setInt(1, id);
 
@@ -85,9 +94,9 @@ public class CourseDaoImpl implements CourseDao {
                 resultCourse = new Course();
                 resultCourse.setId(id);
                 resultCourse.setCourseName(resultSet.getString("course_name"));
-                resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
-                resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
-                resultCourse.setTutor(userDao.getUserById(resultSet.getInt("tutor_id")));
+                resultCourse.setStartDate(resultSet.getDate("start_date").toLocalDate());
+                resultCourse.setFinishDate(resultSet.getDate("finish_date").toLocalDate());
+                resultCourse.setTutor(CommonDao.userDao.getUserById(resultSet.getInt("tutor_id")));
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
             } else {
                 resultCourse = null;
@@ -118,7 +127,6 @@ public class CourseDaoImpl implements CourseDao {
 
         try {
             connection = connectionPool.getConnection();
-            userDao = new UserDaoImpl();
             statement = connection.prepareStatement(GET_ALL);
             statement.setLong(1, limit);
             statement.setLong(2, offset);
@@ -130,9 +138,9 @@ public class CourseDaoImpl implements CourseDao {
                 Course resultCourse = new Course();
                 resultCourse.setId(resultSet.getInt("course_id"));
                 resultCourse.setCourseName(resultSet.getString("course_name"));
-                resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
-                resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
-                resultCourse.setTutor(userDao.getUserById(resultSet.getInt("tutor_id")));
+                resultCourse.setStartDate(resultSet.getDate("start_date").toLocalDate());
+                resultCourse.setFinishDate(resultSet.getDate("finish_date").toLocalDate());
+                resultCourse.setTutor(CommonDao.userDao.getUserById(resultSet.getInt("tutor_id")));
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
 
                 resultList.add(resultCourse);
@@ -163,7 +171,6 @@ public class CourseDaoImpl implements CourseDao {
 
         try {
             connection = connectionPool.getConnection();
-            userDao = new UserDaoImpl();
             statement = connection.prepareStatement(GET_BY_TUTOR);
             statement.setInt(1, tutor.getId());
             statement.setLong(2, limit);
@@ -176,8 +183,8 @@ public class CourseDaoImpl implements CourseDao {
                 Course resultCourse = new Course();
                 resultCourse.setId(resultSet.getInt("course_id"));
                 resultCourse.setCourseName(resultSet.getString("course_name"));
-                resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
-                resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
+                resultCourse.setStartDate(resultSet.getDate("start_date").toLocalDate());
+                resultCourse.setFinishDate(resultSet.getDate("finish_date").toLocalDate());
                 resultCourse.setTutor(tutor);
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
 
@@ -211,7 +218,6 @@ public class CourseDaoImpl implements CourseDao {
             connection = connectionPool.getConnection();
             statement = connection.prepareStatement(GET_BY_USER);
 
-            userDao = new UserDaoImpl();
             statement.setInt(1, user.getId());
             statement.setLong(2, limit);
             statement.setLong(3, offset);
@@ -223,9 +229,9 @@ public class CourseDaoImpl implements CourseDao {
                 Course resultCourse = new Course();
                 resultCourse.setId(resultSet.getInt("course_id"));
                 resultCourse.setCourseName(resultSet.getString("course_name"));
-                resultCourse.setStartDate(new java.util.Date(resultSet.getDate("start_date").getTime()));
-                resultCourse.setFinishDate(new java.util.Date(resultSet.getDate("finish_date").getTime()));
-                resultCourse.setTutor(userDao.getUserById(resultSet.getInt("tutor_id")));
+                resultCourse.setStartDate(resultSet.getDate("start_date").toLocalDate());
+                resultCourse.setFinishDate(resultSet.getDate("finish_date").toLocalDate());
+                resultCourse.setTutor(CommonDao.userDao.getUserById(resultSet.getInt("tutor_id")));
                 resultCourse.setCapacity(resultSet.getInt("capacity"));
 
                 resultList.add(resultCourse);
@@ -257,8 +263,8 @@ public class CourseDaoImpl implements CourseDao {
             statement = connection.prepareStatement(ADD_COURSE, Statement.RETURN_GENERATED_KEYS);
 
             statement.setString(1, course.getCourseName());
-            statement.setDate(2, new java.sql.Date(course.getStartDate().getTime()));
-            statement.setDate(3, new java.sql.Date(course.getFinishDate().getTime()));
+            statement.setDate(2, Date.valueOf(course.getStartDate()));
+            statement.setDate(3, Date.valueOf(course.getFinishDate()));
             statement.setInt(4, course.getTutor().getId());
             statement.setInt(5, course.getCapacity());
 
@@ -323,8 +329,8 @@ public class CourseDaoImpl implements CourseDao {
             statement = connection.prepareStatement(UPDATE);
 
             statement.setString(1, course.getCourseName());
-            statement.setDate(2, new java.sql.Date(course.getStartDate().getTime()));
-            statement.setDate(3, new java.sql.Date(course.getFinishDate().getTime()));
+            statement.setDate(2, Date.valueOf(course.getStartDate()));
+            statement.setDate(3, Date.valueOf(course.getFinishDate()));
             statement.setInt(4, course.getTutor().getId());
             statement.setInt(5, course.getCapacity());
             statement.setInt(6, course.getId());
@@ -386,11 +392,161 @@ public class CourseDaoImpl implements CourseDao {
         try {
 
             connection = connectionPool.getConnection();
-            userDao = new UserDaoImpl();
             statement = connection.prepareStatement(COUNT_COURSES);
 
             resultSet = statement.executeQuery();
 
+
+            if (resultSet.next()) {
+                count = resultSet.getLong(1);
+            }
+            return count;
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+        } finally {
+            closeResources(statement, resultSet, connection);
+        }
+        return count;
+    }
+
+    /**
+     * Return count of Courses applied by user
+     *
+     * @return number of users
+     */
+    @Override
+    public long countCoursesByUser(User user) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        long count = 0;
+        try {
+
+            connection = connectionPool.getConnection();
+            statement = connection.prepareStatement(COUNT_COURSES_BY_USER);
+
+            statement.setInt(1,user.getId());
+            resultSet = statement.executeQuery();
+
+
+            if (resultSet.next()) {
+                count = resultSet.getLong(1);
+            }
+            return count;
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+        } finally {
+            closeResources(statement, resultSet, connection);
+        }
+        return count;
+    }
+
+    /**
+     * return true if user enrolled on course
+     *
+     * @param user   - given user
+     * @param course - given course
+     * @return return true if user enrolled on course
+     */
+    @Override
+    public boolean isUserOnCourse(User user, Course course) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = connectionPool.getConnection();
+            statement = connection.prepareStatement(IS_USER_ON_COURSE);
+            statement.setInt(1, user.getId());
+            statement.setInt(2, course.getId());
+
+            resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+        } finally {
+            closeResources(statement, resultSet, connection);
+        }
+        return false;
+    }
+
+    /**
+     * Leaving course by user
+     *
+     * @param course - given course
+     * @param user   - given user
+     * @return - resutl of deleting
+     */
+    @Override
+    public boolean leaveCourse(Course course, User user) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+
+        int rowNumber;
+
+        try {
+            connection = connectionPool.getConnection();
+            statement = connection.prepareStatement(LEAVE_COURSE);
+            statement.setInt(1, user.getId());
+            statement.setInt(2, course.getId());
+
+            rowNumber = statement.executeUpdate();
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+            return false;
+        } finally {
+            closeResources(statement, null, connection);
+        }
+        return rowNumber > 0;
+    }
+
+    @Override
+    public List<User> getUsersOnCourse(Course course, long limit, long offset) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        List<User> resultList = new ArrayList<>();
+        try {
+            connection = connectionPool.getConnection();
+            statement = connection.prepareStatement(GET_USERS_ON_COURSE);
+            statement.setInt(1, course.getId());
+            statement.setLong(2, limit );
+            statement.setLong(3, offset);
+
+            resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                User user = new User();
+                user.setId(resultSet.getInt("user_id"));
+                user.setFirstName(resultSet.getString("first_name"));
+                user.setLastName(resultSet.getString("last_name"));
+                user.setEmail(resultSet.getString("email"));
+                user.setPassword(resultSet.getString("password"));
+                user.setAdmin(resultSet.getBoolean("is_admin"));
+                resultList.add(user);
+            }
+        } catch (SQLException e) {
+            log.log(Level.ERROR, e);
+        } finally {
+            closeResources(statement, resultSet, connection);
+        }
+        return resultList;
+    }
+
+    @Override
+    public long countUsersOnCourse(Course course) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        long count = 0;
+        try {
+
+            connection = connectionPool.getConnection();
+            statement = connection.prepareStatement(COUNT_USERS_ON_COURSE);
+            statement.setInt(1, course.getId());
+            resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
                 count = resultSet.getLong(1);

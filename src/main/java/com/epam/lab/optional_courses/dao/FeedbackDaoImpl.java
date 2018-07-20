@@ -34,14 +34,11 @@ public class FeedbackDaoImpl implements FeedbackDao {
     private static final String UPDATE;
     private static final String COUNT;
 
-    private UserDao userDao;
-    private CourseDao courseDao;
-
-
     static {
+
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream("src/main/resources/sql_request_body_Mysql.properties"));
+            properties.load(FeedbackDaoImpl.class.getClassLoader().getResourceAsStream(("sql_request_body_Mysql.properties")));
             log.log(Level.INFO, "SQL request bodies for feedback loaded successfully");
         } catch (IOException e) {
             log.log(Level.ERROR, "Can't load SQL request bodies for feedback", e);
@@ -115,13 +112,11 @@ public class FeedbackDaoImpl implements FeedbackDao {
             statement.setInt(1, user.getId());
             statement.setLong(2, limit);
             statement.setLong(3, offset);
-            courseDao = new CourseDaoImpl();
-
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 Feedback resultFeedback = new Feedback();
                 resultFeedback.setUser(user);
-                resultFeedback.setCourse(courseDao.getCourseById((resultSet.getInt("course_id"))));
+                resultFeedback.setCourse(CommonDao.courseDao.getCourseById((resultSet.getInt("course_id"))));
                 resultFeedback.setGrade(resultSet.getInt("grade"));
                 resultFeedback.setFeedbackBody(resultSet.getString("feedback_body"));
                 resultList.add(resultFeedback);
@@ -155,12 +150,11 @@ public class FeedbackDaoImpl implements FeedbackDao {
             statement.setInt(1, course.getId());
             statement.setLong(2, limit);
             statement.setLong(3, offset);
-            userDao = new UserDaoImpl();
 
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 Feedback resultFeedback = new Feedback();
-                resultFeedback.setUser(userDao.getUserById((resultSet.getInt("user_id"))));
+                resultFeedback.setUser(CommonDao.userDao.getUserById((resultSet.getInt("user_id"))));
                 resultFeedback.setCourse(course);
                 resultFeedback.setGrade(resultSet.getInt("grade"));
                 resultFeedback.setFeedbackBody(resultSet.getString("feedback_body"));
@@ -193,14 +187,12 @@ public class FeedbackDaoImpl implements FeedbackDao {
             statement = connection.prepareStatement(GET_ALL);
             statement.setLong(1, limit);
             statement.setLong(2, offset);
-            courseDao = new CourseDaoImpl();
-            userDao = new UserDaoImpl();
 
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 Feedback resultFeedback = new Feedback();
-                resultFeedback.setUser(userDao.getUserById((resultSet.getInt("user_id"))));
-                resultFeedback.setCourse(courseDao.getCourseById((resultSet.getInt("course_id"))));
+                resultFeedback.setUser(CommonDao.userDao.getUserById((resultSet.getInt("user_id"))));
+                resultFeedback.setCourse(CommonDao.courseDao.getCourseById((resultSet.getInt("course_id"))));
                 resultFeedback.setGrade(resultSet.getInt("grade"));
                 resultFeedback.setFeedbackBody(resultSet.getString("feedback_body"));
                 resultList.add(resultFeedback);

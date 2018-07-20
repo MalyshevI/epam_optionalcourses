@@ -1,6 +1,7 @@
 package com.epam.lab.optional_courses.entity;
 
 
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -12,13 +13,13 @@ import java.util.Date;
 public class Course {
     private int id;
     private String courseName;
-    private Date startDate;
-    private Date finishDate;
+    private LocalDate startDate;
+    private LocalDate finishDate;
     private User tutor;
     private int capacity;
 
 
-    public Course(int id, String courseName, Date startDate, Date finishDate, User tutor, int capacity) {
+    public Course(int id, String courseName, LocalDate startDate, LocalDate finishDate, User tutor, int capacity) {
         this.id = id;
         this.courseName = courseName;
         this.startDate = startDate;
@@ -46,19 +47,19 @@ public class Course {
         this.tutor = tutor;
     }
 
-    public Date getStartDate() {
+    public LocalDate getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
     }
 
-    public Date getFinishDate() {
+    public LocalDate getFinishDate() {
         return finishDate;
     }
 
-    public void setFinishDate(Date finishDate) {
+    public void setFinishDate(LocalDate finishDate) {
         this.finishDate = finishDate;
     }
 

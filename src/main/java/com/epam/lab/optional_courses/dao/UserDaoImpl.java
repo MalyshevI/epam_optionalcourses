@@ -27,11 +27,13 @@ public class UserDaoImpl implements UserDao {
     private static final String UPDATE;
     private static final String DELETE;
     private static final String COUNT;
+    private static final String DELETE_USER_FEEDBACK;
+    private static final String DELETE_USER_COURSES;
 
     static {
         Properties properties = new Properties();
         try {
-            properties.load(ConnectionPool.class.getClassLoader().getResourceAsStream("sql_request_body_Mysql.properties"));
+            properties.load(UserDaoImpl.class.getClassLoader().getResourceAsStream(("sql_request_body_Mysql.properties")));
             log.log(Level.INFO, "SQL request bodies for users loaded successfully");
         } catch (IOException e) {
             log.log(Level.ERROR, "Can't load SQL request bodies for users", e);
@@ -44,6 +46,8 @@ public class UserDaoImpl implements UserDao {
         DELETE = properties.getProperty("DELETE_USER");
         COUNT = properties.getProperty("COUNT_USERS");
         GET_USER_BY_EMAIL = properties.getProperty("GET_USER_BY_EMAIL");
+        DELETE_USER_FEEDBACK = properties.getProperty("DELETE_USER_FEEDBACK");
+        DELETE_USER_COURSES = properties.getProperty("DELETE_USER_COURSES");
     }
 
 
@@ -194,10 +198,20 @@ public class UserDaoImpl implements UserDao {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
+            int counter = 0;
+            stmt = conn.prepareStatement(DELETE_USER_FEEDBACK);
+            stmt.setInt(1, user.getId());
+            counter += stmt.executeUpdate();
+
+            stmt = conn.prepareStatement(DELETE_USER_COURSES);
+            stmt.setInt(1, user.getId());
+            counter += stmt.executeUpdate();
+
             stmt = conn.prepareStatement(DELETE);
             stmt.setInt(1, user.getId());
+            counter += stmt.executeUpdate();
 
-            return stmt.executeUpdate() > 0;
+            return counter > 0;
         } catch (SQLException e) {
             log.log(Level.ERROR, e);
         } finally {
